@@ -38,31 +38,6 @@ function initClient() {
     });
 }
 
-/**
- * Fetches values from the Google Sheet.
- */
-function getSheetValues() {
-    // Example: Fetch data from a Google Sheet
-    var spreadsheetId = 'YOUR_SPREADSHEET_ID';
-    var range = 'Sheet1!A1:D10'; // Adjust the range as needed
-
-    gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: spreadsheetId,
-        range: range,
-    }).then(function(response) {
-        var range = response.result;
-        if (range.values.length > 0) {
-            console.log('Data retrieved:');
-            console.log(range.values);
-        } else {
-            console.log('No data found.');
-        }
-    }, function(error) {
-        console.log('Error retrieving data: ' + error);
-    });
-}
-
-
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
 function getSheetValues() {
     console.log("Getting sheet values...")
