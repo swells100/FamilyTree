@@ -1,0 +1,292 @@
+html, body {
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    display: contents;
+    overflow: hidden;
+}
+
+[v-cloak] {
+    display: none;
+}
+
+@font-face {
+    font-family: Fontenstein;
+    src: url(FontensteinStd-Regular.ttf);
+}
+
+#settings {
+    background: black;
+}
+
+#app {
+    width: 100%;
+	height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.col {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+
+    background: #f6f6f6;
+}
+
+.fullWidth {
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+
+    background: #f6f6f6;
+}
+
+.barTop {
+    height: 56px;
+    padding: 0 0 0 8px;
+    display: flex;
+    align-items: center;
+    border-bottom: 4px solid #ddd;
+    background: #e9e9e9;
+}
+.menuItem {
+    height: 32px;
+    margin: 0 0 0 8px;
+}
+.subMenuIcon {
+    height: 16px;
+    margin: 0 8px 0 0;
+}
+
+#spaceBar {
+    width: 4px;
+    height: 56px;
+    background: #ddd;
+}
+
+#searchBar {
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: #f6f6f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+#searchBar > label {
+    display: flex;
+    justify-content: center;
+}
+#searchIcon {
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    z-index: 1;
+}
+#searchTypeSelect-button {
+    width: 18px;
+    height: 18px;
+}
+#searchInput {
+    width: 300px;
+	height: 80%;
+	border: none;
+	font-size: 16px;
+    background: transparent;
+}
+
+#treeTabs {
+    height: calc(100% - 60px);
+}
+
+#mwContainerContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.container {
+    display: flex;
+    width: 100%;
+    flex: auto;
+    overflow: auto;
+}
+.container.row {
+    flex-direction: row;
+    min-height: 48px;
+}
+.container.column {
+    min-width: 48px;
+}
+
+.gutter {
+    background-color: #ddd;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+.gutter.gutter-horizontal {
+    background-image: url('images/grabbar-image.png');
+    cursor: col-resize;
+}
+.gutter.gutter-vertical {
+    background-image: url('images/grabbar-image-vert.png');
+    cursor: row-resize;
+}
+
+#tabsContainerContainerContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+}
+#tbcWrapper {
+    display: flex;
+    border-top: 4px solid #ddd;
+    background: #e9e9e9;
+    padding: 0 0 0 4px;
+}
+#addTabButton {
+    margin: calc(.2em + 1px) 4px;
+    cursor: pointer;
+    user-select: none;
+}
+#addTabButton:hover {
+    background: #e9e9e9;
+}
+#tabButtonsContainer {
+    padding: .2em;
+    display: flex;
+    overflow-x: auto;
+}
+#tabsContainerContainer {
+    display: flex;
+    height: 100%;
+    overflow: auto;
+    flex-direction: column;
+}
+.containerTab {
+    height: 0%;
+    overflow: auto;
+}
+
+.tabNavButton {
+    background-color: transparent;
+	border: 1px solid transparent;
+	font-size: 40px;
+    margin-left: 6px;
+}
+.tabNavButton.right {
+    margin-left: auto;
+    margin-right: 6px;
+}
+
+.secondaryTab {
+    overflow-y: auto;
+}
+
+.newline {
+    white-space: pre-wrap;
+}
+
+.clickable:hover, .hoverFromTab, .active.clickable, .active button {
+    transform: scale(1.1);
+    z-index: 1;
+}
+.clickable:hover {
+    cursor: pointer;
+}
+.active.clickable, .active button {
+    filter: drop-shadow(0 0 6px grey);
+}
+
+.treeContainer {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    overflow: auto;
+}
+.tree {
+    width: fit-content;
+    height: calc(100% - var(--treeMarginTop));
+    white-space: nowrap;
+    position: relative;
+    top: var(--treeMarginTop);
+    margin-right: auto;
+
+    transform-origin: top left;
+}
+
+.zoom-container {
+    position: absolute;
+    top: 32px;
+    right: 32px;
+    z-index: 12;
+}
+.zoom-slider {
+    height: 200px;
+}
+
+.tree > .row {
+    display: flex;
+    height: var(--blockHeight);
+    white-space: nowrap;
+    padding: 0 var(--treeMarginRight) 0 var(--treeMarginLeft);
+}
+
+.block {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin-left: var(--blockMargin);
+}
+
+.nameAndSymbols {
+    display: inline-flex;
+    height: var(--nameHeight);
+}
+
+.name {
+    font-family: 'Fontenstein';
+    height: 100%;
+    border-radius: 0px;
+    user-select: none;
+}
+.name > a {
+    font-family: 'Fontenstein';
+}
+
+.tagSymbol {
+    display: inline;
+    -webkit-user-drag: none;
+    margin-left: var(--tagMargin);
+    height: var(--nameHeight);
+}
+
+.line {
+    width: var(--lineWeight);
+}
+.line.vert {
+    position: relative;
+    height: var(--lineHeight);
+}
+.line.horiz {
+    display: inline-block;
+    vertical-align: top;
+    height: var(--lineWeight);
+}
+.line.transparent {
+    color: transparent;
+}
+
+.across {
+    height: var(--lineWeight);
+    white-space: nowrap;
+    padding: 0 var(--treeMarginRight) 0 var(--treeMarginLeft);
+}

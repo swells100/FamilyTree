@@ -1,0 +1,51 @@
+ MINOR THINGS/FIXES
+ + Pronouns
+ + Scroll to zoom
+ + Make the info bar Not Look Like Shit
+ + Loading bar
+ + Make non-touching trees snap to mid
+ + Alternate for images not loading
+ + Parts of composite symbols should count as the composite for hovering on tabs
+ + McDucker stub color is wrong
+ + Link otherselves in tab
+ + Tag -> sib should give options of which tree to go to
+ + Dragging tabs break when scroll bar is active
+ + Littles/bigs who are stubs don't work with tab
+ + Smaller horizontal window size breaks sib placement
+
+ MAJOR CHANGES/ADDITIONS
+ + Main menu
+ + Legend
+ + Clan logos on trees
+ + Minimize trees
+ + Interact with stub to go to clan tree
+
+FUNKY TREE STYLES
+ + One pledge class per row
+ + Snap to first little
+ + OCD Tolerance
+
+TAB SYSTEM
++ Create your own tab, highly customizable
+ - Name
+ - Select houses
+ - Time machine
+ - Wrapping
++ Edit/delete tabs
+
+SETTINGS PAGE
++ Apply to this tree/Apply to all trees
++ Light mode/dark mode/custom palette
++ Sizes
++ Font (w/ warning that some things might break)
++ Multi-window/tab system switch
+ - Edit window structure/add more
++ Download tree(s)
+
+INFORMATION PAGE
+
+SUGGESTIONS FORM
++ Blurb, "Found an error?" etc.
++ Email address (optional)
++ Subject line
++ Description

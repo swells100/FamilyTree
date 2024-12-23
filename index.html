@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiji TreeG</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <link rel="stylesheet" href="jquery-ui.css">
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
+
+    <script src="vue.js"></script>
+    <script src="util.js"></script>
+    <script src="events.js"></script>
+    <script src="main.js"></script>
+</head>
+<body onload="loadVue()">
+    <!-- This gets all data from Google -->
+    <div id="dataGetter">
+        <script src="sheetHandler.js"></script>
+        <script defer src="https://apis.google.com/js/api.js"
+            onload="this.onload=function(){};handleClientLoad()"
+            onreadystatechange="if (this.readyState === 'complete') this.onload()">
+        </script>
+    </div>
+    
+    <!-- All visible items -->
+    <div id="app" v-cloak>
+        <!-- All versions of things that can pop up on the left -->
+        <div id="leftColContainer" v-if="getDisplayTab() != 'mainMenu'" :class="{ fullWidth: getDisplayTab() == 'tree', col: getDisplayTab() != 'tree', left: getDisplayTab() != 'tree' }">
+            <!-- Bar with a bunch of doodads on it -->
+            <div id="menuBar" class="barTop">
+                <img id="infoIcon" title="Information" class="menuItem clickable" src="images/information-icon.png" onclick="showTab({ tabType: 'info', ele: this })">
+                <img id="settingsIcon" title="Settings" class="menuItem clickable" src="images/settings-icon.png" onclick="showTab({ tabType: 'settings', ele: this })">
+                <img id="suggestionsIcon" title="Suggestions" class="menuItem clickable" src="images/suggestions-icon.png" onclick="showTab({ tabType: 'suggestions', ele: this })">
+                <img id="saveTreeIcon" title="Save Current Tree" class="menuItem clickable" src="images/save-tree-icon.png" onclick="saveCurrentTree()">
+                <div id="spaceBar" class="menuItem"></div>
+                <div id="searchBar" class="menuItem">
+                    <label for="searchInput">
+                        <select id="searchTypeSelect">
+                            <option type="name" selected="selected">Search by name</option>
+                            <option type="class">Search by pledge class</option>
+                            <option type="tag">Search by tags</option>
+                        </select>
+                    </label>
+                    <input type="text" id="searchInput" name="searchInput" placeholder="Search by name..."></input>
+                </div>
+            </div>
+
+            <!-- The tabs with the tree in it, autofilled by script -->
+            <div id="treeTabs">
+                <div id="mwContainerContainer" v-if="getDisplayTab() == 'load' || getSettings().containerStyle == 'multi-window'"></div>
+                <div id="tabsContainerContainerContainer" v-if="getDisplayTab() == 'load' || getSettings().containerStyle == 'tabs'">
+                    <div id="tabsContainerContainer">
+                        <div id="tbcWrapper">
+                            <button id="addTabButton" class="ui-tabs ui-corner-all ui-state-default">+</button>
+                            <ul id="tabButtonsContainer"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All versions of things that can pop up on the right -->
+        <div id="rightColContainer" v-if="getDisplayTab() != 'mainMenu'" class="col right">
+            <!-- Buttons -->
+            <div class="tabNavButtonContainer barTop" v-if="getDisplayTab() != 'tree'">
+                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable">🠔</button>
+                <button v-if="canGoForward()" onclick="goForward()" class="tabNavButton clickable">🠖</button>
+                <button onclick="exitTab()" class="tabNavButton right clickable">×</button>
+            </div>
+
+            <!-- Settings tab -->
+            <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'">
+                <h1>This is the family tree for the Gamma Kappa chapter of Phi Gamma Delta. </h1>
+            </div>
+
+            <!-- Settings tab -->
+            <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'">
+                <h1>This is where the settings are!</h1>
+            </div>
+
+            <!-- Settings tab -->
+            <div id="suggestionsTab" class="secondaryTab" v-if="getDisplayTab() == 'suggestions'">
+                <h1>This is where the suggestions are!</h1>
+            </div>
+
+            <!-- Tab that opens when you click a name. -->
+            <div id="nameTab" class="secondaryTab" v-if="getDisplayTab() == 'nameTab'">
+                <h1>{{ unspecialText(getTabData().sib.name) }}</h1>
+                <h2>{{ getTabData().sib.pledgeClass }}</h2>
+                <h2><button @click="displayTagInfo(getTabData().sib.house)">{{ getTabData().sib.house }}</button></h2>
+
+                <ol v-if="getTabData().sib.tags.length > 0">
+                    <li v-for="tagName in getTabData().sib.tags">
+                        <button @mouseover="applyTagHoverFromTab(tagName)" @mouseleave="removeHoverFromTab" @click="displayTagInfo(tagName)">{{ tagName }}</button>
+                    </li>
+                </ol>
+
+                <p v-if="getTabData().sib.big != null">Big:
+                    <button @mouseover="applySibHoverFromTab(getTabData().sib.big)" @mouseleave="removeHoverFromTab" @click="sibToName(getTabData().sib.big)">{{ unspecialText(getTabData().sib.big.name) }}</button>
+                </p>
+
+                <p v-if="getTabData().sib.otherselves.length == 1">Other Version on This Tree:
+                    <button @mouseover="applySibHoverFromTab(getTabData().sib.otherselves[0])" @mouseleave="removeHoverFromTab" @click="sibToName(getTabData().sib.otherselves[0])">{{ unspecialText(getTabData().sib.otherselves[0].name) }}</button>
+                </p>
+                <p v-if="getTabData().sib.otherselves.length > 1">Other Versions on This Tree:</p>
+                <ol v-if="getTabData().sib.otherselves.length > 1">
+                    <li v-for="otherself in getTabData().sib.otherselves">
+                        <button @mouseover="applySibHoverFromTab(otherself)" @mouseleave="removeHoverFromTab" @click="sibToName(otherself)">{{ unspecialText(otherself.name) }}</button>
+                    </li>
+                </ol>
+
+                <p v-if="getTabData().sib.littles.length == 1">Little:
+                    <button @mouseover="applySibHoverFromTab(getTabData().sib.littles[0])" @mouseleave="removeHoverFromTab" @click="sibToName(getTabData().sib.littles[0])">{{ unspecialText(getTabData().sib.littles[0].name) }}</button>
+                </p>
+                <p v-if="getTabData().sib.littles.length > 1">Littles:</p>
+                <ol v-if="getTabData().sib.littles.length > 1">
+                    <li v-for="little in getTabData().sib.littles">
+                        <button @mouseover="applySibHoverFromTab(little)" @mouseleave="removeHoverFromTab" @click="sibToName(little)">{{ unspecialText(little.name) }}</button>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Tag that opens when you click a tab. Wait no -->
+            <div id="tagTab" class="secondaryTab" v-if="getDisplayTab() == 'tagTab'">
+                <img v-if="getTabData().imgSrc" class="tagSymbol" :src="getTabData().imgSrc">
+                <h1>{{ getTabData().tag.name }}</h1>
+
+                <p class="newline">{{ getTabData().tag.description }}</p>
+
+                <p v-if="getTabData().tag.taggedSibs.length > 0">
+                    <span v-if="getTabData().tag.type.includes('HOUSE')">People in this house:</span>
+                    <span v-if="!getTabData().tag.type.includes('HOUSE')">People with this tag:</span>
+                </p>
+                <ol v-if="getTabData().tag.taggedSibs.length > 0">
+                    <li v-for="sib in getTabData().tag.taggedSibs">
+                        <button @mouseover="applySibHoverFromTab(sib)" @mouseleave="removeHoverFromTab" @click="tagToName(sib.name)">{{ unspecialText(sib.name) }}</button>
+                    </li>
+                </ol>
+
+                <p v-if="getTabData().tag.relatedTags.length > 0">Related tags:</p>
+                <ol v-if="getTabData().tag.relatedTags.length > 0">
+                    <li v-for="tagName in getTabData().tag.relatedTags">
+                        <button @mouseover="applyTagHoverFromTab(tagName)" @mouseleave="removeHoverFromTab" @click="displayTagInfo(tagName)">{{ tagName }}</button>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
