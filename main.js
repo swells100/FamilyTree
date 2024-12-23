@@ -630,14 +630,65 @@ function spaceTree(container) {
 }
 
 // Draws the lines that connect littles across to their big
+// function drawAcrossLines(container) {
+//     console.log(`Drawing across lines for container ${container.name}...`)
+//     treeDiv = container.treeDiv
+
+//     lineWeight = settings.sizes['lineWeight']
+
+//     minSibHeight = minValue(container.siblings, 'height')
+//     maxSibHeight = maxValue(container.siblings, 'height')
+//     for (height = minSibHeight; height < maxSibHeight; height++) {
+//         prevEnd = 0
+
+//         divRow = treeDiv.querySelector('#row-' + height)
+//         divAcross = document.createElement("div")
+//         divAcross.id = "across-" + height
+//         divAcross.classList.add("across")
+//         treeDiv.insertBefore(divAcross, divRow.nextSibling)
+
+//         thisRowSibs = container.siblings.filter(thisSib => thisSib.height == height)
+//         thisRowSibs.forEach(sib => {
+//             if (sib.littles.length == 1) {
+//                 little = sib.littles[0]
+
+//                 leftSpace = little.position - prevEnd - lineWeight/2
+//                 lineWidth = lineWeight
+//             }
+//             else if (sib.littles.length > 1) {
+//                 firstLittle = sib.littles[0]
+//                 lastLittle = sib.littles[sib.littles.length-1]
+
+//                 leftSpace = firstLittle.position - prevEnd - lineWeight/2
+//                 lineWidth = lastLittle.position - firstLittle.position + lineWeight
+//             }
+//             else return
+
+//             acrossLine = document.createElement("div")
+//             acrossLine.classList.add("line")
+//             acrossLine.classList.add("horiz")
+//             acrossLine.classList.add(cleanStr(sib.house))
+//             acrossLine.style.marginLeft = leftSpace + "px"
+//             acrossLine.style.width = lineWidth.toFixed(0) + "px"
+
+//             divAcross.appendChild(acrossLine)
+
+//             prevEnd += leftSpace + lineWidth
+//         })
+//     }
+// }
+
 function drawAcrossLines(container) {
     console.log(`Drawing across lines for container ${container.name}...`)
     treeDiv = container.treeDiv
-
     lineWeight = settings.sizes['lineWeight']
 
     minSibHeight = minValue(container.siblings, 'height')
     maxSibHeight = maxValue(container.siblings, 'height')
+
+    // Get the width of the container (useful for resizing)
+    const containerWidth = treeDiv.offsetWidth;
+    
     for (height = minSibHeight; height < maxSibHeight; height++) {
         prevEnd = 0
 
@@ -652,15 +703,17 @@ function drawAcrossLines(container) {
             if (sib.littles.length == 1) {
                 little = sib.littles[0]
 
-                leftSpace = little.position - prevEnd - lineWeight/2
+                // Use a responsive calculation for left space, scaling by container width
+                leftSpace = (little.position - prevEnd - lineWeight / 2) * (containerWidth / treeDiv.scrollWidth);
                 lineWidth = lineWeight
             }
             else if (sib.littles.length > 1) {
                 firstLittle = sib.littles[0]
                 lastLittle = sib.littles[sib.littles.length-1]
 
-                leftSpace = firstLittle.position - prevEnd - lineWeight/2
-                lineWidth = lastLittle.position - firstLittle.position + lineWeight
+                // Use the same scaling for line width
+                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * (containerWidth / treeDiv.scrollWidth);
+                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * (containerWidth / treeDiv.scrollWidth);
             }
             else return
 
