@@ -1,4 +1,4 @@
-var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com'
+var CLIENT_ID = '792319409454-f6emn622dpc4dmenr9lsv36f80qt2qnk.apps.googleusercontent.com'
 var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo'
 
 // Array of API discovery doc URLs for APIs used by the quickstart
