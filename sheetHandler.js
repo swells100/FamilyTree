@@ -1,23 +1,24 @@
-var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com'
-var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo'
+var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com';
+var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 
 // Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+var DISCOVERY_DOCS = [
+    "https://sheets.googleapis.com/$discovery/rest?version=v4", 
+    "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+];
 
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
+// Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
 var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
 /**
- *  On load, called to load the auth2 library and API client library.
+ * On load, called to load the auth2 library and API client library.
  */
 function handleClientLoad() {
-    gapi.load('client:auth2', initClient)
+    gapi.load('client:auth2', initClient);
 }
 
 /**
- *  Initializes the API client library and sets up sign-in state
- *  listeners.
+ * Initializes the API client library and sets up sign-in state listeners.
  */
 function initClient() {
     gapi.client.init({
@@ -26,11 +27,41 @@ function initClient() {
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES
     }).then(function () {
-        getSheetValues()
-    }, function(error) {
-        console.log(error)
-    })
+        // Sign in if not already signed in
+        if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+            getSheetValues();
+        } else {
+            gapi.auth2.getAuthInstance().signIn().then(getSheetValues);
+        }
+    }, function (error) {
+        console.log(error);
+    });
 }
+
+/**
+ * Fetches values from the Google Sheet.
+ */
+function getSheetValues() {
+    // Example: Fetch data from a Google Sheet
+    var spreadsheetId = 'YOUR_SPREADSHEET_ID';
+    var range = 'Sheet1!A1:D10'; // Adjust the range as needed
+
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: spreadsheetId,
+        range: range,
+    }).then(function(response) {
+        var range = response.result;
+        if (range.values.length > 0) {
+            console.log('Data retrieved:');
+            console.log(range.values);
+        } else {
+            console.log('No data found.');
+        }
+    }, function(error) {
+        console.log('Error retrieving data: ' + error);
+    });
+}
+
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
 function getSheetValues() {
