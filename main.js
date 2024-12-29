@@ -639,7 +639,7 @@ function spaceTree(container) {
 
     // Get the scaling factor based on the window width
     const windowWidth = window.innerWidth;
-    const scaleFactor = windowWidth / 1920; // 1920px is the assumed design width (e.g., for 1080p)
+    const scaleFactor = windowWidth / 3840; // 3840px is the assumed design width (e.g., for 4k)
 
     // Optional: Account for device pixel ratio (useful for high-DPI devices like Retina displays)
     const pixelRatio = window.devicePixelRatio || 1;
