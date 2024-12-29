@@ -571,62 +571,142 @@ function createUnspacedTree(container) {
 }
 
 // Spaces the tree correctly
+// function spaceTree(container) {
+//     console.log(`Spacing the tree for container ${container.name}...`)
+//     treeDiv = container.treeDiv
+
+//     prevEnd = 0
+//     blockMargin = settings.sizes['blockMargin']
+//     treeMarginLeft = settings.sizes['treeMarginLeft']
+
+//     biglessSibs = container.siblings.filter(thisSib => !thisSib.big)
+//     biglessSibs.forEach(sib => {
+//         calculateRelativePositions(container, sib)
+
+//         // Put siblings at the top in the correct position*
+//         position = 0
+//         biglessSibs.every(prevSib => {
+//             if (prevSib.name == sib.name) {
+//                 position = Math.max(sib.branchWidths[0][0] + blockMargin, position)
+//                 return false
+//             }
+//             else position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position)
+//             return true
+//         })
+//         sib.position = Math.floor(position)
+
+//         // *Prevent boxes from going negative
+//         sib.branchWidths.forEach((widths, height) => {
+//             if (widths[0] + sib.position < blockMargin) sib.position = blockMargin - Math.floor(widths[0])
+//         })
+
+//         setLittleAbsolutePositions(container, sib)
+//     })
+
+//     // Calculate all the margins
+//     minSibHeight = minValue(container.siblings, 'height')
+//     maxSibHeight = maxValue(container.siblings, 'height')
+//     for (i = minSibHeight ; i <= maxSibHeight; i++) {
+//         prevEnd = 0
+//         thisRowSibs = container.siblings.filter(thisSib => thisSib.height == i)
+//         thisRowSibs.forEach(sib => {
+//             space = sib.position - prevEnd + sib.branchWidths[0][0]
+
+//             sibBlock = sib.div
+//             sibBlock.style.marginLeft = space + "px"
+
+//             prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
+//         })
+//     }
+
+//     // Make left margin auto
+//     $( treeDiv ).css('margin-left', 'auto')
+
+//     centerTopSib = getValueAtMiddleIndex(biglessSibs)
+//     centerTopSib.div.scrollIntoView({behavior: "auto", block: "start", inline: "center"})
+//     container.containerDiv.scrollTop = 0
+//     console.log(`With spacing, container ${container.name} has these siblings:`)
+//     console.log(container.siblings)
+// }
+
 function spaceTree(container) {
-    console.log(`Spacing the tree for container ${container.name}...`)
-    treeDiv = container.treeDiv
+    console.log(`Spacing the tree for container ${container.name}...`);
 
-    prevEnd = 0
-    blockMargin = settings.sizes['blockMargin']
-    treeMarginLeft = settings.sizes['treeMarginLeft']
+    // Container div and margin settings
+    treeDiv = container.treeDiv;
+    blockMargin = settings.sizes['blockMargin'];
+    treeMarginLeft = settings.sizes['treeMarginLeft'];
 
-    biglessSibs = container.siblings.filter(thisSib => !thisSib.big)
+    prevEnd = 0;
+
+    // Filter siblings that are not 'big'
+    let biglessSibs = container.siblings.filter(sib => !sib.big);
+
+    // Position each sibling correctly
     biglessSibs.forEach(sib => {
-        calculateRelativePositions(container, sib)
+        // Ensure relative positions are calculated for each sibling
+        calculateRelativePositions(container, sib);
 
-        // Put siblings at the top in the correct position*
-        position = 0
+        // Set the initial position for the sibling
+        let position = 0;
         biglessSibs.every(prevSib => {
-            if (prevSib.name == sib.name) {
-                position = Math.max(sib.branchWidths[0][0] + blockMargin, position)
-                return false
+            // Calculate the position based on the previous sibling's position
+            if (prevSib.name === sib.name) {
+                // If it's the same sibling, adjust position with the branch width and margin
+                position = Math.max(sib.branchWidths[0][0] + blockMargin, position);
+                return false;  // Exit loop
+            } else {
+                // Calculate position considering distance to the previous sibling and margin
+                position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position);
             }
-            else position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position)
-            return true
-        })
-        sib.position = Math.floor(position)
+            return true;
+        });
 
-        // *Prevent boxes from going negative
+        // Prevent negative positions (if sibling width causes it)
+        sib.position = Math.floor(position);
+
         sib.branchWidths.forEach((widths, height) => {
-            if (widths[0] + sib.position < blockMargin) sib.position = blockMargin - Math.floor(widths[0])
-        })
+            // Prevent any negative positioning due to width
+            if (widths[0] + sib.position < blockMargin) {
+                sib.position = blockMargin - Math.floor(widths[0]);
+            }
+        });
 
-        setLittleAbsolutePositions(container, sib)
-    })
+        // Set the absolute position for the little elements (if any)
+        setLittleAbsolutePositions(container, sib);
+    });
 
-    // Calculate all the margins
-    minSibHeight = minValue(container.siblings, 'height')
-    maxSibHeight = maxValue(container.siblings, 'height')
-    for (i = minSibHeight ; i <= maxSibHeight; i++) {
-        prevEnd = 0
-        thisRowSibs = container.siblings.filter(thisSib => thisSib.height == i)
+    // Calculate and apply margins for siblings
+    minSibHeight = minValue(container.siblings, 'height');
+    maxSibHeight = maxValue(container.siblings, 'height');
+    for (let i = minSibHeight; i <= maxSibHeight; i++) {
+        prevEnd = 0;
+        let thisRowSibs = container.siblings.filter(sib => sib.height === i);
+
         thisRowSibs.forEach(sib => {
-            space = sib.position - prevEnd + sib.branchWidths[0][0]
+            let space = sib.position - prevEnd + sib.branchWidths[0][0];
+            let sibBlock = sib.div;
 
-            sibBlock = sib.div
-            sibBlock.style.marginLeft = space + "px"
+            // Apply the left margin to each sibling block
+            sibBlock.style.marginLeft = `${space}px`;
 
-            prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
-        })
+            // Update the position of prevEnd to the right edge of the sibling block
+            prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft;
+        });
     }
 
-    // Make left margin auto
-    $( treeDiv ).css('margin-left', 'auto')
+    // Make left margin auto for the entire tree
+    $(treeDiv).css('margin-left', 'auto');
 
-    centerTopSib = getValueAtMiddleIndex(biglessSibs)
-    centerTopSib.div.scrollIntoView({behavior: "auto", block: "start", inline: "center"})
-    container.containerDiv.scrollTop = 0
-    console.log(`With spacing, container ${container.name} has these siblings:`)
-    console.log(container.siblings)
+    // Scroll the center sibling into view
+    let centerTopSib = getValueAtMiddleIndex(biglessSibs);
+    centerTopSib.div.scrollIntoView({ behavior: "auto", block: "start", inline: "center" });
+
+    // Reset the scroll position of the container div
+    container.containerDiv.scrollTop = 0;
+
+    console.log(`With spacing, container ${container.name} has these siblings:`);
+    console.log(container.siblings);
 }
 
 // Draws the lines that connect littles across to their big
@@ -675,69 +755,6 @@ function spaceTree(container) {
 
 //             prevEnd += leftSpace + lineWidth
 //         })
-//     }
-// }
-
-// function drawAcrossLines(container) {
-//     console.log(`Drawing across lines for container ${container.name}...`);
-
-//     treeDiv = container.treeDiv;
-//     lineWeight = settings.sizes['lineWeight'];
-
-//     minSibHeight = minValue(container.siblings, 'height');
-//     maxSibHeight = maxValue(container.siblings, 'height');
-
-//     // Get the width of the container (useful for resizing)
-//     const containerWidth = treeDiv.offsetWidth;
-
-//     // Calculate the scaling factor based on the container's width and the treeDiv's scroll width
-//     const scaleFactor = containerWidth / treeDiv.scrollWidth;
-
-//     for (let height = minSibHeight; height < maxSibHeight; height++) {
-//         let prevEnd = 0;
-
-//         let divRow = treeDiv.querySelector('#row-' + height);
-//         let divAcross = document.createElement("div");
-//         divAcross.id = "across-" + height;
-//         divAcross.classList.add("across");
-//         treeDiv.insertBefore(divAcross, divRow.nextSibling);
-
-//         let thisRowSibs = container.siblings.filter(thisSib => thisSib.height === height);
-//         thisRowSibs.forEach(sib => {
-//             let leftSpace, lineWidth;
-
-//             if (sib.littles.length === 1) {
-//                 let little = sib.littles[0];
-
-//                 // Calculate leftSpace relative to the container width
-//                 leftSpace = (little.position - prevEnd - lineWeight / 2) * scaleFactor;
-//                 lineWidth = lineWeight;
-//             }
-//             else if (sib.littles.length > 1) {
-//                 let firstLittle = sib.littles[0];
-//                 let lastLittle = sib.littles[sib.littles.length - 1];
-
-//                 // Calculate leftSpace and lineWidth for multiple "littles"
-//                 leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * scaleFactor;
-//                 lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * scaleFactor;
-//             }
-//             else {
-//                 return;
-//             }
-
-//             // Create the across line element
-//             let acrossLine = document.createElement("div");
-//             acrossLine.classList.add("line");
-//             acrossLine.classList.add("horiz");
-//             acrossLine.classList.add(cleanStr(sib.house));
-//             acrossLine.style.marginLeft = `${leftSpace}px`;  // Apply left space
-//             acrossLine.style.width = `${lineWidth.toFixed(0)}px`;  // Apply line width
-
-//             divAcross.appendChild(acrossLine);
-
-//             // Update prevEnd for the next line
-//             prevEnd += leftSpace + lineWidth;
-//         });
 //     }
 // }
 
