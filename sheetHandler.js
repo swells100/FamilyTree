@@ -109,7 +109,7 @@ function getSheetValues() {
                 var response = JSON.parse(xhr.responseText); // Parse the JSON response
                 var valueRanges = response.valueRanges;
 
-                var settings = {};
+                settings = {};
 
                 // Handle the response as in the original code
                 parseTags(valueRanges[3]);
