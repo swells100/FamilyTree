@@ -693,7 +693,7 @@ function drawAcrossLines(container) {
     const containerWidth = treeDiv.offsetWidth;
 
     // Calculate the scaling factor based on the window's width relative to a base width (1920px for 1080p)
-    const scaleFactor = window.innerWidth / 3840; // Use 1920px as the base width for 1080p
+    const scaleFactor = window.innerWidth / 1920; // Use 1920px as the base width for 1080p
 
     for (let height = minSibHeight; height <= maxSibHeight; height++) {
         let prevEnd = 0;
