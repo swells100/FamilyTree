@@ -714,7 +714,7 @@ function drawAcrossLines(container) {
                 let little = sib.littles[0];
 
                 // Calculate leftSpace relative to the container width
-                leftSpace = (little.position - prevEnd - lineWeight / 2) * scaleFactor;
+                leftSpace = (little.position - prevEnd - (lineWeight * scaleFactor) / 2) * scaleFactor;
                 lineWidth = lineWeight * scaleFactor;
             }
             else if (sib.littles.length > 1) {
@@ -722,7 +722,7 @@ function drawAcrossLines(container) {
                 let lastLittle = sib.littles[sib.littles.length - 1];
 
                 // Calculate leftSpace and lineWidth for multiple "littles"
-                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * scaleFactor;
+                leftSpace = (firstLittle.position - prevEnd - (lineWeight * scaleFactor) / 2) * scaleFactor;
                 lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * scaleFactor;
             }
             else {
