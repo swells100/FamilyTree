@@ -11,32 +11,63 @@ var DISCOVERY_DOCS = [
 var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
 /**
- * On load, called to load the auth2 library and API client library.
+ * On load, called to load the FedCM API.
  */
 function handleClientLoad() {
-    gapi.load('client:auth2', initClient);
+    // Load Google login via FedCM.
+    if (window.FedCM) {
+        initFedCMClient();
+    } else {
+        console.error("FedCM is not supported in this browser.");
+    }
 }
 
 /**
  * Initializes the API client library and sets up sign-in state listeners.
  */
-function initClient() {
+function initFedCMClient() {
+    // Make an authenticated request with FedCM
+    FedCM.requestCredential({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        federated_sign_in: 'google'  // Specify the Google provider
+    })
+    .then(credential => {
+        if (credential) {
+            // Use the credential to authenticate the API client
+            authenticateWithGoogle(credential);
+        } else {
+            console.log("No credentials returned");
+        }
+    })
+    .catch(error => {
+        console.log("Error during FedCM authentication:", error);
+    });
+}
+
+/**
+ * Authenticate the user with the Google API using the credential from FedCM.
+ */
+function authenticateWithGoogle(credential) {
+    // Now you can use the credential to make authorized API requests.
+    // For example, make a request to Google Sheets API:
     gapi.client.init({
         apiKey: API_KEY,
         clientId: CLIENT_ID,
         discoveryDocs: DISCOVERY_DOCS,
         scope: SCOPES
-    }).then(function () {
-        // Sign in if not already signed in
-        if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-            getSheetValues();
-        } else {
-            gapi.auth2.getAuthInstance().signIn().then(getSheetValues);
-        }
-    }, function (error) {
-        console.log(error);
+    }).then(function() {
+        // You can pass the credential as part of your API requests if needed
+        // Get sheet data here, for example:
+        getSheetValues();
+    }).catch(function(error) {
+        console.error("Failed to initialize API client:", error);
     });
 }
+  
+  // Manually simulate component lifecycle (in a non-Angular environment)
+  const app = new AppComponent();
+  app.ngAfterViewInit();
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
 function getSheetValues() {

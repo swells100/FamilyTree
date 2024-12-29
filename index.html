@@ -23,12 +23,14 @@
     <!-- This gets all data from Google -->
     <div id="dataGetter">
         <script src="sheetHandler.js"></script>
-        <script defer src="https://apis.google.com/js/api.js"
+        <script defer src="https://accounts.google.com/gsi/client" onload="this.onload=function(){};handleClientLoad()"
+        onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+        <!-- <script defer src="https://apis.google.com/js/api.js"
             onload="this.onload=function(){};handleClientLoad()"
             onreadystatechange="if (this.readyState === 'complete') this.onload()">
-        </script>
+        </script> -->
     </div>
-    
+    <div id="buttonDiv"></div>
     <!-- All visible items -->
     <div id="app" v-cloak>
         <!-- All versions of things that can pop up on the left -->
