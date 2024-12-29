@@ -1,69 +1,78 @@
-var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com';
-var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
+// var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com';
+// var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 
-// Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = [
-    "https://sheets.googleapis.com/$discovery/rest?version=v4", 
-    "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-];
+// // Array of API discovery doc URLs for APIs used by the quickstart
+// var DISCOVERY_DOCS = [
+//     "https://sheets.googleapis.com/$discovery/rest?version=v4", 
+//     "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+// ];
 
-// Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+// // Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
+// var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-/**
- * On load, called to load the FedCM API.
- */
-function handleClientLoad() {
-    // Load Google login via FedCM.
-    if (window.FedCM) {
-        initFedCMClient();
-    } else {
-        console.error("FedCM is not supported in this browser.");
+// /**
+//  * On load, called to load the auth2 library and API client library.
+//  */
+// function handleClientLoad() {
+//     gapi.load('client:auth2', initClient);
+// }
+
+// /**
+//  * Initializes the API client library and sets up sign-in state listeners.
+//  */
+// function initClient() {
+//     gapi.client.init({
+//         apiKey: API_KEY,
+//         clientId: CLIENT_ID,
+//         discoveryDocs: DISCOVERY_DOCS,
+//         scope: SCOPES
+//     }).then(function () {
+//         // Sign in if not already signed in
+//         if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+//             getSheetValues();
+//         } else {
+//             gapi.auth2.getAuthInstance().signIn().then(getSheetValues);
+//         }
+//     }, function (error) {
+//         console.log(error);
+//     });
+// }
+
+class AppComponent {
+
+    constructor() {
+      // Initialization code if necessary
     }
-}
-
-/**
- * Initializes the API client library and sets up sign-in state listeners.
- */
-function initFedCMClient() {
-    // Make an authenticated request with FedCM
-    FedCM.requestCredential({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        federated_sign_in: 'google'  // Specify the Google provider
-    })
-    .then(credential => {
-        if (credential) {
-            // Use the credential to authenticate the API client
-            authenticateWithGoogle(credential);
-        } else {
-            console.log("No credentials returned");
-        }
-    })
-    .catch(error => {
-        console.log("Error during FedCM authentication:", error);
-    });
-}
-
-/**
- * Authenticate the user with the Google API using the credential from FedCM.
- */
-function authenticateWithGoogle(credential) {
-    // Now you can use the credential to make authorized API requests.
-    // For example, make a request to Google Sheets API:
-    gapi.client.init({
-        apiKey: API_KEY,
-        clientId: CLIENT_ID,
-        discoveryDocs: DISCOVERY_DOCS,
-        scope: SCOPES
-    }).then(function() {
-        // You can pass the credential as part of your API requests if needed
-        // Get sheet data here, for example:
-        getSheetValues();
-    }).catch(function(error) {
-        console.error("Failed to initialize API client:", error);
-    });
-}
+  
+    ngAfterViewInit() {
+      // Ensure the google object exists and initialize the sign-in process
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: "792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com",
+          callback: (response) => this.handleGoogleSignIn(response)
+        });
+  
+        google.accounts.id.renderButton(
+          document.getElementById("buttonDiv"),
+          { size: "large", type: "icon", shape: "pill" }  // customization attributes
+        );
+      } else {
+        console.error("Google API not loaded.");
+      }
+    }
+  
+    handleGoogleSignIn(response) {
+      console.log(response.credential);
+  
+      // Decode the idToken to an object
+      let base64Url = response.credential.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      console.log(JSON.parse(jsonPayload));
+    }
+  }
   
   // Manually simulate component lifecycle (in a non-Angular environment)
   const app = new AppComponent();
