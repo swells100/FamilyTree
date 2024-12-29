@@ -2,13 +2,13 @@ const CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleuser
 const API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 
 // // Array of API discovery doc URLs for APIs used by the quickstart
-// var DISCOVERY_DOCS = [
-//     "https://sheets.googleapis.com/$discovery/rest?version=v4", 
-//     "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-// ];
+const DISCOVERY_DOCS = [
+    "https://sheets.googleapis.com/$discovery/rest?version=v4", 
+    "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+];
 
 // // Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
-// var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
 // /**
 //  * On load, called to load the auth2 library and API client library.
@@ -38,44 +38,108 @@ const API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 //     });
 // }
 
-function handleClientLoad() {
-    // Load the API client and auth2 library
-    api.load('client:auth2', initApiClient);
-  }
+// function handleClientLoad() {
+//     // Load the API client and auth2 library
+//     gapi.load('client:auth2', initClient);
+//   }
 
-  function initApiClient() {
-    // Initialize the API client with the API key
-    api.client.init({
-      apiKey: API_KEY,
-    }).then(() => {
-      // Make an API request to fetch data from the Google Sheet
-      getSheetValues();
-    }).catch((error) => {
-      console.error('Error initializing Google API client:', error);
+  function handleClientLoad() {
+    client = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      discovery_docs: DISCOVERY_DOCS,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        access_token = tokenResponse.access_token;
+      },
+    }).then(function () {
+        getSheetValues();
     });
   }
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
+// function getSheetValues() {
+//     console.log("Getting sheet values...")
+
+//     // Get the spreadsheet bits and do stuff to em
+//     gapi.client.sheets.spreadsheets.values.batchGet({
+//         spreadsheetId: '1Ep5BEB79E5VgSY7JnK971dlidknzGFI3VNQFncPMEcA',
+//         ranges: ['Siblings!A2:H', 'Size Settings!A2:B', 'Misc Settings!A2:B', 'Tag Settings!A2:N', 'Conjunction Grid!A1:N', 'Container Settings!A2:E']
+//       }).then((response) => {
+//         ranges = response.result.valueRanges
+//         settings = {}
+//         parseTags(ranges[3])
+//         placeSiblings(ranges[0])
+//         parseSizeSettings(ranges[1])
+//         parseMiscSettings(ranges[2])
+//         parseConjunctionGrid(ranges[4])
+//         createContainerSettings(ranges[5])
+//         appElement.settings = settings
+
+//         main()
+//       })
+// }
+
 function getSheetValues() {
-    console.log("Getting sheet values...")
+    console.log("Getting sheet values...");
 
-    // Get the spreadsheet bits and do stuff to em
-    api.client.sheets.spreadsheets.values.batchGet({
-        spreadsheetId: '1Ep5BEB79E5VgSY7JnK971dlidknzGFI3VNQFncPMEcA',
-        ranges: ['Siblings!A2:H', 'Size Settings!A2:B', 'Misc Settings!A2:B', 'Tag Settings!A2:N', 'Conjunction Grid!A1:N', 'Container Settings!A2:E']
-      }).then((response) => {
-        ranges = response.result.valueRanges
-        settings = {}
-        parseTags(ranges[3])
-        placeSiblings(ranges[0])
-        parseSizeSettings(ranges[1])
-        parseMiscSettings(ranges[2])
-        parseConjunctionGrid(ranges[4])
-        createContainerSettings(ranges[5])
-        appElement.settings = settings
+    var spreadsheetId = '1Ep5BEB79E5VgSY7JnK971dlidknzGFI3VNQFncPMEcA';
+    var ranges = [
+        'Siblings!A2:H',
+        'Size Settings!A2:B',
+        'Misc Settings!A2:B',
+        'Tag Settings!A2:N',
+        'Conjunction Grid!A1:N',
+        'Container Settings!A2:E'
+    ];
+    
+    var apiKey = API_KEY;  // Your API Key
+    
+    // Build the request URL
+    var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?key=${apiKey}&ranges=${ranges.join('&ranges=')}`;
 
-        main()
-      })
+    // Create a new XMLHttpRequest object
+    var xhr = new XMLHttpRequest();
+
+    // Configure it: GET-request for the Sheets API
+    xhr.open('GET', url, true);
+
+    // Set the onload and onerror handlers
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var response = JSON.parse(xhr.responseText); // Parse the JSON response
+                var valueRanges = response.valueRanges;
+
+                var settings = {};
+
+                // Handle the response as in the original code
+                parseTags(valueRanges[3]);
+                placeSiblings(valueRanges[0]);
+                parseSizeSettings(valueRanges[1]);
+                parseMiscSettings(valueRanges[2]);
+                parseConjunctionGrid(valueRanges[4]);
+                createContainerSettings(valueRanges[5]);
+
+                // Store the settings in the app element
+                appElement.settings = settings;
+
+                // Call main function after processing the data
+                main();
+            } catch (error) {
+                console.error("Error parsing response:", error);
+            }
+        } else {
+            console.error("Error fetching data from Google Sheets API:", xhr.status, xhr.statusText);
+        }
+    };
+
+    // Set the onerror handler for the request
+    xhr.onerror = function() {
+        console.error("Request failed with status:", xhr.status);
+    };
+
+    // Send the request
+    xhr.send();
 }
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure
