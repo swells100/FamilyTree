@@ -78,6 +78,10 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 //       })
 // }
 
+window.appElement = {
+    settings: {}
+};
+
 function getSheetValues() {
     console.log("Getting sheet values...");
 
