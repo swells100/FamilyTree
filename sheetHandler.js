@@ -1,5 +1,5 @@
-// var CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com';
-// var API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
+const CLIENT_ID = '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 
 // // Array of API discovery doc URLs for APIs used by the quickstart
 // var DISCOVERY_DOCS = [
@@ -38,68 +38,25 @@
 //     });
 // }
 
-class AppComponent {
-    constructor() {
-        // Initialization code if necessary
-    }
+function handleClientLoad() {
+    // Load the API client and auth2 library
+    gapi.load('client:auth2', initApiClient);
+  }
 
-    // This function will now handle everything
-    handleClientLoad() {
-        // Ensure the google object exists and initialize the sign-in process
-        if (window.google && google.accounts && google.accounts.id) {
-            google.accounts.id.initialize({
-                client_id: "792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com",
-                callback: (response) => this.handleGoogleSignIn(response)  // Handle sign-in response
-            });
-
-            google.accounts.id.renderButton(
-                document.getElementById("buttonDiv"),
-                { size: "large", type: "icon", shape: "pill" }  // customization attributes
-            );
-        } else {
-            console.error("Google API not loaded.");
-        }
-    }
-
-    // Handles the Google sign-in callback
-    handleGoogleSignIn(response) {
-        console.log("Google Sign-In successful:", response);
-
-        // Decode the idToken to extract user information
-        let base64Url = response.credential.split('.')[1];
-        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        let jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        const decoded = JSON.parse(jsonPayload);
-        console.log("Decoded ID Token:", decoded);
-
-        // Now we can proceed with Google API client initialization and Sheets API request
-        this.loadGoogleSheetData();
-    }
-
-    // Initialize Google API client and load data from the Google Sheet
-    loadGoogleSheetData() {
-        gapi.load('client', () => {
-            gapi.client.init({
-                apiKey: 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo',  // API Key
-                clientId: '792319409454-gfo9169f0a11idboe7khn5f3a9v5khdh.apps.googleusercontent.com',  // Client ID
-                discoveryDocs: [
-                    "https://sheets.googleapis.com/$discovery/rest?version=v4",
-                    "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-                ],
-                scope: "https://www.googleapis.com/auth/spreadsheets.readonly"  // Scopes required
-            }).then(() => {
-                // Now we can make the Sheets API call to fetch data
-                this.getSheetData();
-            }).catch((error) => {
-                console.error("Error initializing the Google API client:", error);
-            });
-        });
-    }
+  function initApiClient() {
+    // Initialize the API client with the API key
+    gapi.client.init({
+      apiKey: API_KEY,
+    }).then(() => {
+      // Make an API request to fetch data from the Google Sheet
+      getSheetValues();
+    }).catch((error) => {
+      console.error('Error initializing Google API client:', error);
+    });
+  }
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
-getSheetValues() {
+function getSheetValues() {
     console.log("Getting sheet values...")
 
     // Get the spreadsheet bits and do stuff to em
@@ -122,7 +79,7 @@ getSheetValues() {
 }
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure
-placeSiblings(result) {
+function placeSiblings(result) {
     // Log the number of siblings
     var numRows = result.values ? result.values.length : 0
     console.log(`${numRows} siblings retrieved.`)
@@ -185,7 +142,7 @@ placeSiblings(result) {
 }
 
 // Convert tag set into a usable json
-parseTags(result) {
+function parseTags(result) {
     defaultTagData = []
     result.values.forEach(row => {
         tag = tagRowToJSON(row)
@@ -199,7 +156,7 @@ parseTags(result) {
 }
 
 // Translate the Conjunction Grid
-parseConjunctionGrid(result) {
+function parseConjunctionGrid(result) {
     conjunctionGrid = {}
     romTypes = result.values[0]
     result.values.forEach(row => {
@@ -219,7 +176,7 @@ parseConjunctionGrid(result) {
 }
 
 // Apply default size settings given by spreadsheet
-parseSizeSettings(result) {
+function parseSizeSettings(result) {
     defaultSizes = {}
     docStyle = document.body.style
     result.values.forEach(row => defaultSizes[cleanStr(row[0])] = parseInt(row[1]))
@@ -236,7 +193,7 @@ parseSizeSettings(result) {
 }
 
 // Apply any misc settings given by spreadsheet
-parseMiscSettings(result) {
+function parseMiscSettings(result) {
     result.values.forEach(row => settings[cleanStr(row[0])] = row[1])
 
     console.log("All Settings:")
@@ -244,7 +201,7 @@ parseMiscSettings(result) {
 }
 
 // Apply default container settings given by spreadsheet
-createContainerSettings(result) {
+function createContainerSettings(result) {
     containers = []
     docStyle = document.body.style
     result.values.forEach(function(row) {
@@ -257,7 +214,3 @@ createContainerSettings(result) {
     console.log("Containers:")
     console.log(settings.containers)
 }
-}
-
-const app = new AppComponent();
-app.handleClientLoad();
