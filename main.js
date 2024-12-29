@@ -692,8 +692,15 @@ function drawAcrossLines(container) {
     // Get the width of the container (useful for resizing)
     const containerWidth = treeDiv.offsetWidth;
 
-    // Calculate the scaling factor based on the window's width relative to a base width (1920px for 1080p)
-    const scaleFactor = window.innerWidth / 1920; // Use 1920px as the base width for 1080p
+    // Calculate the scaling factor based on the container's width and the treeDiv's scroll width
+    // Consider the window's width as part of the scaling factor
+    const scaleFactor = containerWidth / treeDiv.scrollWidth;
+
+    // Calculate a base scaling factor considering the screen size
+    const screenScaleFactor = window.innerWidth / 1920;  // Assuming 1920px as base resolution (e.g., 1080p)
+
+    // Apply screen scaling to adjust further based on screen width
+    const finalScaleFactor = scaleFactor * screenScaleFactor;
 
     for (let height = minSibHeight; height <= maxSibHeight; height++) {
         let prevEnd = 0;
@@ -712,17 +719,17 @@ function drawAcrossLines(container) {
             if (sib.littles.length === 1) {
                 let little = sib.littles[0];
 
-                // Calculate leftSpace relative to the container width using the scale factor
-                leftSpace = (little.position - prevEnd - lineWeight / 2) * scaleFactor;
-                lineWidth = lineWeight * scaleFactor;
+                // Calculate leftSpace relative to the container width
+                leftSpace = (little.position - prevEnd - lineWeight / 2) * finalScaleFactor;
+                lineWidth = lineWeight * finalScaleFactor;
             }
             else if (sib.littles.length > 1) {
                 let firstLittle = sib.littles[0];
                 let lastLittle = sib.littles[sib.littles.length - 1];
 
                 // Calculate leftSpace and lineWidth for multiple "littles"
-                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * scaleFactor;
-                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * scaleFactor;
+                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * finalScaleFactor;
+                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * finalScaleFactor;
             }
             else {
                 return;
