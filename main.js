@@ -571,154 +571,65 @@ function createUnspacedTree(container) {
 }
 
 // Spaces the tree correctly
-// function spaceTree(container) {
-//     console.log(`Spacing the tree for container ${container.name}...`)
-//     treeDiv = container.treeDiv
-
-//     prevEnd = 0
-//     blockMargin = settings.sizes['blockMargin']
-//     treeMarginLeft = settings.sizes['treeMarginLeft']
-
-//     biglessSibs = container.siblings.filter(thisSib => !thisSib.big)
-//     biglessSibs.forEach(sib => {
-//         calculateRelativePositions(container, sib)
-
-//         // Put siblings at the top in the correct position*
-//         position = 0
-//         biglessSibs.every(prevSib => {
-//             if (prevSib.name == sib.name) {
-//                 position = Math.max(sib.branchWidths[0][0] + blockMargin, position)
-//                 return false
-//             }
-//             else position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position)
-//             return true
-//         })
-//         sib.position = Math.floor(position)
-
-//         // *Prevent boxes from going negative
-//         sib.branchWidths.forEach((widths, height) => {
-//             if (widths[0] + sib.position < blockMargin) sib.position = blockMargin - Math.floor(widths[0])
-//         })
-
-//         setLittleAbsolutePositions(container, sib)
-//     })
-
-//     // Calculate all the margins
-//     minSibHeight = minValue(container.siblings, 'height')
-//     maxSibHeight = maxValue(container.siblings, 'height')
-//     for (i = minSibHeight ; i <= maxSibHeight; i++) {
-//         prevEnd = 0
-//         thisRowSibs = container.siblings.filter(thisSib => thisSib.height == i)
-//         thisRowSibs.forEach(sib => {
-//             space = sib.position - prevEnd + sib.branchWidths[0][0]
-
-//             sibBlock = sib.div
-//             sibBlock.style.marginLeft = space + "px"
-
-//             prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
-//         })
-//     }
-
-//     // Make left margin auto
-//     $( treeDiv ).css('margin-left', 'auto')
-
-//     centerTopSib = getValueAtMiddleIndex(biglessSibs)
-//     centerTopSib.div.scrollIntoView({behavior: "auto", block: "start", inline: "center"})
-//     container.containerDiv.scrollTop = 0
-//     console.log(`With spacing, container ${container.name} has these siblings:`)
-//     console.log(container.siblings)
-// }
-
 function spaceTree(container) {
-    console.log(`Spacing the tree for container ${container.name}...`);
+    console.log(`Spacing the tree for container ${container.name}...`)
+    treeDiv = container.treeDiv
 
-    // Container div and margin settings
-    treeDiv = container.treeDiv;
-    blockMargin = settings.sizes['blockMargin'];
-    treeMarginLeft = settings.sizes['treeMarginLeft'];
+    prevEnd = 0
+    blockMargin = settings.sizes['blockMargin']
+    treeMarginLeft = settings.sizes['treeMarginLeft']
 
-    // Get the scaling factor based on the window width
-    const windowWidth = window.innerWidth;
-    const scaleFactor = windowWidth / 3840; // 3840px is the assumed design width (e.g., for 4k)
-
-    // Optional: Account for device pixel ratio (useful for high-DPI devices like Retina displays)
-    const pixelRatio = window.devicePixelRatio || 1;
-
-    prevEnd = 0;
-
-    // Filter siblings that are not 'big'
-    let biglessSibs = container.siblings.filter(sib => !sib.big);
-
-    // Position each sibling correctly
+    biglessSibs = container.siblings.filter(thisSib => !thisSib.big)
     biglessSibs.forEach(sib => {
-        // Ensure relative positions are calculated for each sibling
-        calculateRelativePositions(container, sib);
+        calculateRelativePositions(container, sib)
 
-        // Set the initial position for the sibling
-        let position = 0;
+        // Put siblings at the top in the correct position*
+        position = 0
         biglessSibs.every(prevSib => {
-            // Calculate the position based on the previous sibling's position
-            if (prevSib.name === sib.name) {
-                // If it's the same sibling, adjust position with the branch width and margin
-                position = Math.max(sib.branchWidths[0][0] + blockMargin, position);
-                return false;  // Exit loop
-            } else {
-                // Calculate position considering distance to the previous sibling and margin
-                position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position);
+            if (prevSib.name == sib.name) {
+                position = Math.max(sib.branchWidths[0][0] + blockMargin, position)
+                return false
             }
-            return true;
-        });
+            else position = Math.max(prevSib.position + distToTouch(prevSib, sib) + blockMargin, position)
+            return true
+        })
+        sib.position = Math.floor(position)
 
-        // Prevent negative positions (if sibling width causes it)
-        sib.position = Math.floor(position);
-
-        // Apply the scaling factor to position and width calculations
-        sib.position *= scaleFactor * pixelRatio;
-
+        // *Prevent boxes from going negative
         sib.branchWidths.forEach((widths, height) => {
-            // Prevent any negative positioning due to width
-            if (widths[0] + sib.position < blockMargin) {
-                sib.position = blockMargin - Math.floor(widths[0]);
-            }
-        });
+            if (widths[0] + sib.position < blockMargin) sib.position = blockMargin - Math.floor(widths[0])
+        })
 
-        // Set the absolute position for the little elements (if any)
-        setLittleAbsolutePositions(container, sib);
-    });
+        setLittleAbsolutePositions(container, sib)
+    })
 
-    // Calculate and apply margins for siblings
-    minSibHeight = minValue(container.siblings, 'height');
-    maxSibHeight = maxValue(container.siblings, 'height');
-    for (let i = minSibHeight; i <= maxSibHeight; i++) {
-        prevEnd = 0;
-        let thisRowSibs = container.siblings.filter(sib => sib.height === i);
-
+    // Calculate all the margins
+    minSibHeight = minValue(container.siblings, 'height')
+    maxSibHeight = maxValue(container.siblings, 'height')
+    for (i = minSibHeight ; i <= maxSibHeight; i++) {
+        prevEnd = 0
+        thisRowSibs = container.siblings.filter(thisSib => thisSib.height == i)
         thisRowSibs.forEach(sib => {
-            let space = sib.position - prevEnd + sib.branchWidths[0][0];
+            space = sib.position - prevEnd + sib.branchWidths[0][0]
 
-            let sibBlock = sib.div;
+            sibBlock = sib.div
+            sibBlock.style.marginLeft = space + "px"
 
-            // Apply the left margin to each sibling block
-            sibBlock.style.marginLeft = `${space}px`;
-
-            // Update the position of prevEnd to the right edge of the sibling block
-            prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft;
-        });
+            prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
+        })
     }
 
-    // Make left margin auto for the entire tree
-    $(treeDiv).css('margin-left', 'auto');
+    // Make left margin auto
+    $( treeDiv ).css('margin-left', 'auto')
 
-    // Scroll the center sibling into view
-    let centerTopSib = getValueAtMiddleIndex(biglessSibs);
-    centerTopSib.div.scrollIntoView({ behavior: "auto", block: "start", inline: "center" });
-
-    // Reset the scroll position of the container div
-    container.containerDiv.scrollTop = 0;
-
-    console.log(`With spacing, container ${container.name} has these siblings:`);
-    console.log(container.siblings);
+    centerTopSib = getValueAtMiddleIndex(biglessSibs)
+    centerTopSib.div.scrollIntoView({behavior: "auto", block: "start", inline: "center"})
+    container.containerDiv.scrollTop = 0
+    console.log(`With spacing, container ${container.name} has these siblings:`)
+    console.log(container.siblings)
 }
+
+
 
 // Draws the lines that connect littles across to their big
 // function drawAcrossLines(container) {
@@ -781,8 +692,8 @@ function drawAcrossLines(container) {
     // Get the width of the container (useful for resizing)
     const containerWidth = treeDiv.offsetWidth;
 
-    // Calculate the scaling factor based on the container's width and the treeDiv's scroll width
-    const scaleFactor = containerWidth / treeDiv.scrollWidth;
+    // Calculate the scaling factor based on the window's width relative to a base width (1920px for 1080p)
+    const scaleFactor = window.innerWidth / 3840; // Use 1920px as the base width for 1080p
 
     for (let height = minSibHeight; height <= maxSibHeight; height++) {
         let prevEnd = 0;
@@ -801,9 +712,9 @@ function drawAcrossLines(container) {
             if (sib.littles.length === 1) {
                 let little = sib.littles[0];
 
-                // Calculate leftSpace relative to the container width
+                // Calculate leftSpace relative to the container width using the scale factor
                 leftSpace = (little.position - prevEnd - lineWeight / 2) * scaleFactor;
-                lineWidth = lineWeight;
+                lineWidth = lineWeight * scaleFactor;
             }
             else if (sib.littles.length > 1) {
                 let firstLittle = sib.littles[0];
