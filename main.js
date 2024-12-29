@@ -696,12 +696,6 @@ function drawAcrossLines(container) {
     // Consider the window's width as part of the scaling factor
     const scaleFactor = containerWidth / treeDiv.scrollWidth;
 
-    // Calculate a base scaling factor considering the screen size
-    const screenScaleFactor = window.innerWidth / 3840;  // Assuming 1920px as base resolution (e.g., 1080p)
-
-    // Apply screen scaling to adjust further based on screen width
-    const finalScaleFactor = scaleFactor * screenScaleFactor;
-
     for (let height = minSibHeight; height <= maxSibHeight; height++) {
         let prevEnd = 0;
 
@@ -720,16 +714,16 @@ function drawAcrossLines(container) {
                 let little = sib.littles[0];
 
                 // Calculate leftSpace relative to the container width
-                leftSpace = (little.position - prevEnd - lineWeight / 2) * finalScaleFactor;
-                lineWidth = lineWeight * finalScaleFactor;
+                leftSpace = (little.position - prevEnd - lineWeight / 2) * scaleFactor;
+                lineWidth = lineWeight * scaleFactor;
             }
             else if (sib.littles.length > 1) {
                 let firstLittle = sib.littles[0];
                 let lastLittle = sib.littles[sib.littles.length - 1];
 
                 // Calculate leftSpace and lineWidth for multiple "littles"
-                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * finalScaleFactor;
-                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * finalScaleFactor;
+                leftSpace = (firstLittle.position - prevEnd - lineWeight / 2) * scaleFactor;
+                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * scaleFactor;
             }
             else {
                 return;
