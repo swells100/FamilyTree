@@ -40,12 +40,12 @@ const API_KEY = 'AIzaSyD3slHGehg5t6aMrqgN_J_twlFzGIE2pVo';
 
 function handleClientLoad() {
     // Load the API client and auth2 library
-    gapi.load('client:auth2', initApiClient);
+    api.load('client:auth2', initApiClient);
   }
 
   function initApiClient() {
     // Initialize the API client with the API key
-    gapi.client.init({
+    api.client.init({
       apiKey: API_KEY,
     }).then(() => {
       // Make an API request to fetch data from the Google Sheet
@@ -60,7 +60,7 @@ function getSheetValues() {
     console.log("Getting sheet values...")
 
     // Get the spreadsheet bits and do stuff to em
-    gapi.client.sheets.spreadsheets.values.batchGet({
+    api.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: '1Ep5BEB79E5VgSY7JnK971dlidknzGFI3VNQFncPMEcA',
         ranges: ['Siblings!A2:H', 'Size Settings!A2:B', 'Misc Settings!A2:B', 'Tag Settings!A2:N', 'Conjunction Grid!A1:N', 'Container Settings!A2:E']
       }).then((response) => {
