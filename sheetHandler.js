@@ -51,9 +51,8 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
       callback: (tokenResponse) => {
         access_token = tokenResponse.access_token;
       },
-    }).then(function () {
-        getSheetValues();
     });
+    getSheetValues();
   }
 
 // Get raw spreadsheet data and convert it into a dope-ass data structure.
