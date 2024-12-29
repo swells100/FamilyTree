@@ -637,6 +637,13 @@ function spaceTree(container) {
     blockMargin = settings.sizes['blockMargin'];
     treeMarginLeft = settings.sizes['treeMarginLeft'];
 
+    // Get the scaling factor based on the window width
+    const windowWidth = window.innerWidth;
+    const scaleFactor = windowWidth / 1920; // 1920px is the assumed design width (e.g., for 1080p)
+
+    // Optional: Account for device pixel ratio (useful for high-DPI devices like Retina displays)
+    const pixelRatio = window.devicePixelRatio || 1;
+
     prevEnd = 0;
 
     // Filter siblings that are not 'big'
@@ -665,6 +672,9 @@ function spaceTree(container) {
         // Prevent negative positions (if sibling width causes it)
         sib.position = Math.floor(position);
 
+        // Apply the scaling factor to position and width calculations
+        sib.position *= scaleFactor * pixelRatio;
+
         sib.branchWidths.forEach((widths, height) => {
             // Prevent any negative positioning due to width
             if (widths[0] + sib.position < blockMargin) {
@@ -685,6 +695,7 @@ function spaceTree(container) {
 
         thisRowSibs.forEach(sib => {
             let space = sib.position - prevEnd + sib.branchWidths[0][0];
+
             let sibBlock = sib.div;
 
             // Apply the left margin to each sibling block
