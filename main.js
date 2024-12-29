@@ -697,7 +697,7 @@ function drawAcrossLines(container) {
     const scaleFactor = containerWidth / treeDiv.scrollWidth;
 
     // Calculate a base scaling factor considering the screen size
-    const screenScaleFactor = window.innerWidth / 1920;  // Assuming 1920px as base resolution (e.g., 1080p)
+    const screenScaleFactor = window.innerWidth / 3840;  // Assuming 1920px as base resolution (e.g., 1080p)
 
     // Apply screen scaling to adjust further based on screen width
     const finalScaleFactor = scaleFactor * screenScaleFactor;
