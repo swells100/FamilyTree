@@ -62,7 +62,7 @@ function applySettings() {
 
             stylesheet.insertRule(rule, stylesheet.cssRules.length)
             
-            placeLogo(container, tagImage.src = "https://drive.google.com/thumbnail?id=" + tag.imageAddress, 200, 300, 100, 100);
+            placeLogo(container, "https://drive.google.com/thumbnail?id=" + tag.imageAddress, 200, 300, 100, 100);
         }
     })
 }
