@@ -61,8 +61,9 @@ function applySettings() {
             rule += "}"
 
             stylesheet.insertRule(rule, stylesheet.cssRules.length)
-            
-            placeLogo(container, "https://drive.google.com/thumbnail?id=" + tag.imageAddress, 200, 300, 100, 100);
+            if (tag.imageAddress) {
+                placeLogo(container, tag.imageAddress, 200, 300, 100, 100);
+            }
         }
     })
 }
@@ -758,7 +759,7 @@ function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
     logoDiv.style.height = `${logoHeight}px`; // Set logo height
 
     let img = document.createElement("img");
-    img.src = logoSrc; // Path to the logo
+    img.src = "https://drive.google.com/thumbnail?id=" + logoSrc; // Path to the logo
     img.alt = "Tree Logo";  // Alt text for accessibility
     img.style.width = "100%";  // Make sure the image fits the container
     img.style.height = "100%"; // Adjust to fit within the div
