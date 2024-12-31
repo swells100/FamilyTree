@@ -750,6 +750,12 @@ function drawAcrossLines(container) {
 
 // Function to place a logo at a specific position in the tree
 function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+
+    if (!container || !container.treeDiv) {
+        console.error("treeDiv is not defined for the container.");
+        return;
+    }
+
     let logoDiv = document.createElement("div");
     logoDiv.classList.add("logo");  // You can style this class to control its appearance
     logoDiv.style.position = "absolute";
@@ -759,6 +765,7 @@ function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
     logoDiv.style.height = `${logoHeight}px`; // Set logo height
 
     let img = document.createElement("img");
+    console.log(logoSrc);
     img.src = "https://drive.google.com/thumbnail?id=" + logoSrc; // Path to the logo
     img.alt = "Tree Logo";  // Alt text for accessibility
     img.style.width = "100%";  // Make sure the image fits the container
@@ -767,10 +774,3 @@ function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
     logoDiv.appendChild(img);
     container.treeDiv.appendChild(logoDiv);  // Append logo to the tree container
 }
-
-// // Example usage: Place a logo at specific coordinates (x, y) in the tree
-// function addLogosToTree(container) {
-//     // Add logos at specific positions
-//     placeLogo(container, "logo1.png", 200, 300, 100, 100);  // Logo at (x=200, y=300) with size 100x100
-//     placeLogo(container, "logo2.png", 500, 600, 150, 150);  // Another logo at (x=500, y=600) with size 150x150
-// }
