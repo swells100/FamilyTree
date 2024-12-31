@@ -61,9 +61,6 @@ function applySettings() {
             rule += "}"
 
             stylesheet.insertRule(rule, stylesheet.cssRules.length)
-            if (tag.imageAddress) {
-                placeLogo(container, tag.imageAddress, 200, 300, 100, 100);
-            }
         }
     })
 }
@@ -635,117 +632,57 @@ function spaceTree(container) {
 
 
 // Draws the lines that connect littles across to their big
-// function drawAcrossLines(container) {
-//     console.log(`Drawing across lines for container ${container.name}...`)
-//     treeDiv = container.treeDiv
-
-//     lineWeight = settings.sizes['lineWeight']
-
-//     minSibHeight = minValue(container.siblings, 'height')
-//     maxSibHeight = maxValue(container.siblings, 'height')
-//     for (height = minSibHeight; height < maxSibHeight; height++) {
-//         prevEnd = 0
-
-//         divRow = treeDiv.querySelector('#row-' + height)
-//         divAcross = document.createElement("div")
-//         divAcross.id = "across-" + height
-//         divAcross.classList.add("across")
-//         treeDiv.insertBefore(divAcross, divRow.nextSibling)
-
-//         thisRowSibs = container.siblings.filter(thisSib => thisSib.height == height)
-//         thisRowSibs.forEach(sib => {
-//             if (sib.littles.length == 1) {
-//                 little = sib.littles[0]
-
-//                 leftSpace = little.position - prevEnd - lineWeight/2
-//                 lineWidth = lineWeight
-//             }
-//             else if (sib.littles.length > 1) {
-//                 firstLittle = sib.littles[0]
-//                 lastLittle = sib.littles[sib.littles.length-1]
-
-//                 leftSpace = firstLittle.position - prevEnd - lineWeight/2
-//                 lineWidth = lastLittle.position - firstLittle.position + lineWeight
-//             }
-//             else return
-
-//             acrossLine = document.createElement("div")
-//             acrossLine.classList.add("line")
-//             acrossLine.classList.add("horiz")
-//             acrossLine.classList.add(cleanStr(sib.house))
-//             acrossLine.style.marginLeft = leftSpace + "px"
-//             acrossLine.style.width = lineWidth.toFixed(0) + "px"
-
-//             divAcross.appendChild(acrossLine)
-
-//             prevEnd += leftSpace + lineWidth
-//         })
-//     }
-// }
-
 function drawAcrossLines(container) {
-    console.log(`Drawing across lines for container ${container.name}...`);
+    console.log(`Drawing across lines for container ${container.name}...`)
+    treeDiv = container.treeDiv
 
-    treeDiv = container.treeDiv;
-    lineWeight = settings.sizes['lineWeight'];
+    lineWeight = settings.sizes['lineWeight']
 
-    minSibHeight = minValue(container.siblings, 'height');
-    maxSibHeight = maxValue(container.siblings, 'height');
+    minSibHeight = minValue(container.siblings, 'height')
+    maxSibHeight = maxValue(container.siblings, 'height')
+    for (height = minSibHeight; height < maxSibHeight; height++) {
+        prevEnd = 0
 
-    // Get the width of the container (useful for resizing)
-    const containerWidth = treeDiv.offsetWidth;
+        divRow = treeDiv.querySelector('#row-' + height)
+        divAcross = document.createElement("div")
+        divAcross.id = "across-" + height
+        divAcross.classList.add("across")
+        treeDiv.insertBefore(divAcross, divRow.nextSibling)
 
-    // Calculate the scaling factor based on the container's width and the treeDiv's scroll width
-    // Consider the window's width as part of the scaling factor
-    const scaleFactor = containerWidth / treeDiv.scrollWidth;
-
-    for (let height = minSibHeight; height <= maxSibHeight; height++) {
-        let prevEnd = 0;
-
-        let divRow = treeDiv.querySelector('#row-' + height);
-        let divAcross = document.createElement("div");
-        divAcross.id = "across-" + height;
-        divAcross.classList.add("across");
-        treeDiv.insertBefore(divAcross, divRow.nextSibling);
-
-        let thisRowSibs = container.siblings.filter(thisSib => thisSib.height === height);
+        thisRowSibs = container.siblings.filter(thisSib => thisSib.height == height)
         thisRowSibs.forEach(sib => {
-            let leftSpace, lineWidth;
+            if (sib.littles.length == 1) {
+                little = sib.littles[0]
 
-            // Make sure sib.position is used as the reference for line positioning
-            if (sib.littles.length === 1) {
-                let little = sib.littles[0];
-
-                // Calculate leftSpace relative to the container width
-                leftSpace = (little.position - prevEnd - (lineWeight * scaleFactor) / 2) * scaleFactor;
-                lineWidth = lineWeight * scaleFactor;
+                leftSpace = little.position - prevEnd - lineWeight/2
+                lineWidth = lineWeight
             }
             else if (sib.littles.length > 1) {
-                let firstLittle = sib.littles[0];
-                let lastLittle = sib.littles[sib.littles.length - 1];
+                firstLittle = sib.littles[0]
+                lastLittle = sib.littles[sib.littles.length-1]
 
-                // Calculate leftSpace and lineWidth for multiple "littles"
-                leftSpace = (firstLittle.position - prevEnd - (lineWeight * scaleFactor) / 2) * scaleFactor;
-                lineWidth = (lastLittle.position - firstLittle.position + lineWeight) * scaleFactor;
+                leftSpace = firstLittle.position - prevEnd - lineWeight/2
+                lineWidth = lastLittle.position - firstLittle.position + lineWeight
             }
-            else {
-                return;
-            }
+            else return
 
-            // Create the across line element
-            let acrossLine = document.createElement("div");
-            acrossLine.classList.add("line");
-            acrossLine.classList.add("horiz");
-            acrossLine.classList.add(cleanStr(sib.house));
-            acrossLine.style.marginLeft = `${leftSpace}px`;  // Apply left space
-            acrossLine.style.width = `${lineWidth.toFixed(0)}px`;  // Apply line width
+            acrossLine = document.createElement("div")
+            acrossLine.classList.add("line")
+            acrossLine.classList.add("horiz")
+            acrossLine.classList.add(cleanStr(sib.house))
+            acrossLine.style.marginLeft = leftSpace + "px"
+            acrossLine.style.width = lineWidth.toFixed(0) + "px"
 
-            divAcross.appendChild(acrossLine);
+            divAcross.appendChild(acrossLine)
 
-            // Update prevEnd for the next line
-            prevEnd += leftSpace + lineWidth;
-        });
+            prevEnd += leftSpace + lineWidth
+        })
     }
+}
+
+// Function to read house logos and call to place them
+function createHouseLogos() {
+
 }
 
 // Function to place a logo at a specific position in the tree
