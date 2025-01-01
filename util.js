@@ -575,28 +575,55 @@ function exitTab() {
 //     html2canvas(treeToCapture)
 // }
 
+// function saveCurrentTree() {
+//     // Get the tabs container and find the active tab
+//     let tcc = document.querySelector("#tabsContainerContainer");
+//     let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
+//     let treeToCapture = $("#container-tab-" + activeTabIndex + " .treeContainer");
+
+//     html2canvas(treeToCapture[0]).then(canvas => {
+//         document.body.appendChild(canvas)
+//     });
+
+
+//     // Use html2canvas to capture the content
+//     // html2canvas(treeToCapture[0]).then((canvas) => {
+//     //     document.body.appendChild(canvas)
+//     //     // Create a temporary link to trigger the download
+//     //     let link = document.createElement("a");
+//     //     link.href = dataUrl;
+//     //     link.download = "current_tree.png"; // Default file name
+
+//     //     // Programmatically click the link to trigger the download
+//     //     link.click();
+//     // }).catch((error) => {
+//     //     console.error("Error capturing the tree:", error);
+//     // });
+// }
+
 function saveCurrentTree() {
-    // Get the tabs container and find the active tab
     let tcc = document.querySelector("#tabsContainerContainer");
     let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
     let treeToCapture = $("#container-tab-" + activeTabIndex + " .treeContainer");
+    // Use html2canvas to capture the entire document
+    html2canvas(treeToCapture[0], {
+        logging: true, // Optionally log the rendering process (useful for debugging)
+        scrollX: 0,    // Ensure the horizontal scroll position is captured (for full page)
+        scrollY: -window.scrollY, // Offset scroll to capture the full page
+        useCORS: true, // To handle cross-origin images, set to true if needed
+        scale: 2 // Increase the scale factor for higher resolution (optional)
+    }).then(function(canvas) {
+        // Convert the canvas to a data URL (image)
+        const dataUrl = canvas.toDataURL("image/png");
 
-    html2canvas(treeToCapture[0]).then(canvas => {
-        document.body.appendChild(canvas)
+        // Create a temporary link to trigger the download
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "full_page_screenshot.png"; // The default file name
+
+        // Programmatically click the link to trigger the download
+        link.click();
+    }).catch(function(error) {
+        console.error("Error capturing the full page:", error);
     });
-
-
-    // Use html2canvas to capture the content
-    // html2canvas(treeToCapture[0]).then((canvas) => {
-    //     document.body.appendChild(canvas)
-    //     // Create a temporary link to trigger the download
-    //     let link = document.createElement("a");
-    //     link.href = dataUrl;
-    //     link.download = "current_tree.png"; // Default file name
-
-    //     // Programmatically click the link to trigger the download
-    //     link.click();
-    // }).catch((error) => {
-    //     console.error("Error capturing the tree:", error);
-    // });
 }
