@@ -602,11 +602,8 @@ function exitTab() {
 // }
 
 function saveCurrentTree() {
-    let tcc = document.querySelector("#tabsContainerContainer");
-    let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
-    let treeToCapture = $("#container-tab-" + activeTabIndex + " .treeContainer");
     // Use html2canvas to capture the entire document
-    html2canvas(treeToCapture[0], {
+    html2canvas(document.body, {
         logging: true, // Optionally log the rendering process (useful for debugging)
         scrollX: 0,    // Ensure the horizontal scroll position is captured (for full page)
         scrollY: -window.scrollY, // Offset scroll to capture the full page
@@ -619,7 +616,7 @@ function saveCurrentTree() {
         // Create a temporary link to trigger the download
         const link = document.createElement("a");
         link.href = dataUrl;
-        link.download = "full_page_screenshot.png"; // The default file name
+        link.download = "fullTree.png"; // The default file name
 
         // Programmatically click the link to trigger the download
         link.click();
