@@ -606,7 +606,7 @@ function saveCurrentTree() {
     let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
     let treeToCapture = $("#container-tab-" + activeTabIndex + " .treeContainer");
     // Use html2canvas to capture the entire document
-    html2canvas(treeToCapture[0], {
+    html2canvas(document.body.thisTreeContainer, {
         logging: true, // Optionally log the rendering process (useful for debugging)
         scrollX: 0,    // Ensure the horizontal scroll position is captured (for full page)
         scrollY: -window.scrollY, // Offset scroll to capture the full page
