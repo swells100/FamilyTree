@@ -568,9 +568,32 @@ function exitTab() {
 }
 
 // Saves the current tree as an svg and tries to download it
-function saveCurrentTree() {
-    tcc = document.querySelector("#tabsContainerContainer")
-    treeToCapture = $( "#container-tab-" + $( tcc ).tabs( "option", "active" ) + " .treeContainer" )
+// function saveCurrentTree() {
+//     tcc = document.querySelector("#tabsContainerContainer")
+//     treeToCapture = $( "#container-tab-" + $( tcc ).tabs( "option", "active" ) + " .treeContainer" )
 
-    html2canvas(treeToCapture)
+//     html2canvas(treeToCapture)
+// }
+
+function saveCurrentTree() {
+    // Get the tabs container and find the active tab
+    let tcc = document.querySelector("#tabsContainerContainer");
+    let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
+    let treeToCapture = $("#container-tab-" + activeTabIndex + " .treeContainer");
+
+    // Use html2canvas to capture the content
+    html2canvas(treeToCapture[0]).then((canvas) => {
+        // Convert the canvas to a data URL (image)
+        let dataUrl = canvas.toDataURL("image/png");
+
+        // Create a temporary link to trigger the download
+        let link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "current_tree.png"; // Default file name
+
+        // Programmatically click the link to trigger the download
+        link.click();
+    }).catch((error) => {
+        console.error("Error capturing the tree:", error);
+    });
 }
