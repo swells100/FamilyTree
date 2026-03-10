@@ -723,6 +723,8 @@ function drawAcrossLines(container) {
  *  
  */
 function createHouseLogos(container) {
+    let taggedHouses = container.houses.map(h => getTag(h)).filter(t => t && t.imageAddress)
+    if (taggedHouses.length <= 5) return Promise.resolve()
     let blockHeight = settings.sizes['blockHeight']
     let lineWeight  = settings.sizes['lineWeight']
     let rowSpacing  = blockHeight + lineWeight
@@ -905,15 +907,12 @@ function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight, tagNam
 }
 
 function createHouseBackground(container) {
-    // Find all houses in this container that have logos
     let taggedHouses = container.houses
         .map(h => getTag(h))
         .filter(t => t && t.imageAddress)
 
-    // Skip the main combined tree (many houses with logos)
     if (taggedHouses.length > 5) return
 
-    // Pick the house with the most non-stub members
     let primaryTag = taggedHouses.sort((a, b) => {
         let aC = container.siblings.filter(s => s.house === a.name && !s.tags.includes('stub')).length
         let bC = container.siblings.filter(s => s.house === b.name && !s.tags.includes('stub')).length
@@ -922,24 +921,13 @@ function createHouseBackground(container) {
 
     if (!primaryTag) return
 
-    let tabDiv = container.structure['tabs']
-    tabDiv.style.position = 'relative'
-
-    let bg = document.createElement('img')
-    bg.src = primaryTag.imageAddress
-    bg.style.position      = 'absolute'
-    bg.style.top           = '50%'
-    bg.style.left          = '50%'
-    bg.style.transform     = 'translate(-50%, -50%)'
-    bg.style.width         = '80%'
-    bg.style.opacity       = '0.05'
-    bg.style.pointerEvents = 'none'
-    bg.style.zIndex        = '0'
-    bg.style.objectFit     = 'contain'
-
-    tabDiv.insertBefore(bg, tabDiv.firstChild)
+    let scrollDiv = container.containerDiv
+    scrollDiv.style.backgroundImage = `linear-gradient(rgba(246,246,246,0.92), rgba(246,246,246,0.92)), url('${primaryTag.imageAddress}')`
+    scrollDiv.style.backgroundRepeat   = 'no-repeat'
+    scrollDiv.style.backgroundPosition = 'center center'
+    scrollDiv.style.backgroundSize     = '50%'
+    scrollDiv.style.backgroundAttachment = 'local'
 }
-
 // // Function to place a logo at a specific position in the tree
 // function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
 

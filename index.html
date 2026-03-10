@@ -79,7 +79,7 @@
 
             <!-- Settings tab -->
             <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'" style="padding: 12px;">
-                <h1>Legend</h1>
+                <h1>Tree Legend</h1>
             
                 <h2>Houses</h2>
                 <div v-for="tag in getSettings().tagData.filter(t => t.type && t.type.includes('HOUSE'))" 
