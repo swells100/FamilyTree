@@ -921,12 +921,23 @@ function createHouseBackground(container) {
 
     if (!primaryTag) return
 
-    let scrollDiv = container.containerDiv
-    scrollDiv.style.backgroundImage = `linear-gradient(rgba(246,246,246,0.92), rgba(246,246,246,0.92)), url('${primaryTag.imageAddress}')`
-    scrollDiv.style.backgroundRepeat   = 'no-repeat'
-    scrollDiv.style.backgroundPosition = 'center center'
-    scrollDiv.style.backgroundSize     = '50%'
-    scrollDiv.style.backgroundAttachment = 'local'
+    let tabDiv = container.structure['tabs']
+    tabDiv.style.position = 'relative'
+    tabDiv.style.overflow = 'hidden'
+
+    let bg = document.createElement('img')
+    bg.src = primaryTag.imageAddress
+    bg.style.position      = 'absolute'
+    bg.style.top           = '50%'
+    bg.style.left          = '50%'
+    bg.style.transform     = 'translate(-50%, -50%)'
+    bg.style.width         = 'min(75vh, 75vw)'
+    bg.style.opacity       = '0.08'
+    bg.style.pointerEvents = 'none'
+    bg.style.zIndex        = '0'
+    bg.style.objectFit     = 'contain'
+
+    tabDiv.insertBefore(bg, tabDiv.firstChild)
 }
 // // Function to place a logo at a specific position in the tree
 // function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
