@@ -551,7 +551,49 @@ function goBack() {
         }
     }
 }
+
 // Goes forward one tab in the tab nav
+function goForward() {
+    if (!appElement.canGoForward()) return
+
+    containers.forEach(cont => setScrollLock(cont))
+
+    appElement.tabPosition++
+    let tabData = appElement.getTabData()
+
+    if (!appElement.split) {
+        appElement.split = Split(['#leftColContainer', '#rightColContainer'], {
+            gutterSize: 12,
+            sizes: [80, 20],
+            minSize: 300,
+            onDragStart: function (sizes) {
+                containers.forEach(cont => setScrollLock(cont))
+            },
+            onDrag: function (sizes) {
+                containers.forEach(cont => goToScrollLock(cont))
+            },
+        })
+    }
+
+    $( ".active" ).removeClass("active")
+    if (tabData.tabType == 'tagTab') $( "." + tabData.tag.iconClassName ).addClass("active")
+
+    setTimeout(function() {
+        containers.forEach(cont => goToScrollLock(cont))
+
+        if (tabData.ele) {
+            snap = false
+            if (tabData.sib && tabData.sib.container) {
+                sibTab = containeredSibTabClickable(tabData.sib)
+                if (!sibTab.parentNode.classList.contains('ui-state-active')) snap = true
+                $( sibTab ).click()
+            }
+            if (snap) tabData.ele.scrollIntoView({behavior: "auto", block: "center", inline: "center"})
+            else tabData.ele.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+            tabData.ele.classList.add("active")
+        }
+    }, 0)
+}
 
 
 // Goes back to tree

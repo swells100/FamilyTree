@@ -6,7 +6,8 @@ function loadVue() {
             tabPosition: 0,
             split: null,
             settings: null,
-            showHouseLogos: true
+            showHouseLogos: true,
+            showTagSymbols: true
         },
         methods: {
             getDisplayTab: function() {
@@ -79,10 +80,17 @@ function loadVue() {
                 }
                 return null
             },
+            
             toggleHouseLogos: function() {
                 let logos = document.querySelectorAll('.logo')
                 logos.forEach(logo => {
                     logo.style.display = this.showHouseLogos ? 'block' : 'none'
+                })
+            },
+            toggleTagSymbols: function() {
+                let symbols = document.querySelectorAll('.tagSymbol')
+                symbols.forEach(s => {
+                    s.style.display = this.showTagSymbols ? 'inline' : 'none'
                 })
             }
         }

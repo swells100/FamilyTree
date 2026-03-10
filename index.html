@@ -72,9 +72,9 @@
         <div id="rightColContainer" v-if="getDisplayTab() != 'mainMenu'" class="col right">
             <!-- Buttons -->
             <div class="tabNavButtonContainer barTop" v-if="getDisplayTab() != 'tree'">
-                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable">🠔</button>
-                <button v-if="canGoForward()" onclick="goForward()" class="tabNavButton clickable">🠖</button>
-                <button onclick="exitTab()" class="tabNavButton right clickable">×</button>
+                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1;">←</button>
+                <button :style="{ opacity: canGoForward() ? 1 : 0 }" onclick="goForward()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1;">→</button>
+                <button onclick="exitTab()" class="tabNavButton right clickable" style="font-size: 24px; line-height: 1;">×</button>
             </div>
 
             <!-- Settings tab -->
@@ -88,6 +88,10 @@
                 <label>
                     <input type="checkbox" v-model="showHouseLogos" @change="toggleHouseLogos">
                     Show house logos
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="showTagSymbols" @change="toggleTagSymbols">
+                    Show tag symbols
                 </label>
             </div>
 
