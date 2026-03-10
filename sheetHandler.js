@@ -10,6 +10,7 @@ const DISCOVERY_DOCS = [
 // // Authorization scopes required by the API; multiple scopes can be included, separated by spaces.
 const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
+
 // /**
 //  * On load, called to load the auth2 library and API client library.
 //  */

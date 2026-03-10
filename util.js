@@ -800,3 +800,32 @@ function saveCurrentTree() {
         }, 500);
     }, 150);
 }
+
+function submitSuggestion() {
+    let SUGGESTIONS_URL = 'https://script.google.com/macros/s/AKfycbyYweyjJxeX0GbJQXFJXXoBPaQaaS1FK87JYG3FZcMum5BaT55FrsAv-66nLMS10ra_AA/exec'
+
+    let text = document.getElementById('suggestionText').value.trim()
+    if (!text) return
+
+    let status = document.getElementById('suggestionStatus')
+    let btn = document.getElementById('suggestionSubmit')
+    btn.disabled = true
+    status.style.display = 'none'
+
+    fetch(SUGGESTIONS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ timestamp: new Date().toLocaleString(), suggestion: text })
+    }).then(() => {
+        status.style.display = 'block'
+        status.style.color = 'green'
+        status.textContent = 'Submitted successfully!'
+        document.getElementById('suggestionText').value = ''
+        btn.disabled = false
+    }).catch(() => {
+        status.style.display = 'block'
+        status.style.color = 'red'
+        status.textContent = 'Error submitting. Try again.'
+        btn.disabled = false
+    })
+}

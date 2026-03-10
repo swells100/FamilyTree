@@ -128,7 +128,12 @@
 
             <!-- Settings tab -->
             <div id="suggestionsTab" class="secondaryTab" v-if="getDisplayTab() == 'suggestions'">
-                <h1>This is where the suggestions are!</h1>
+                <h1>Suggestions</h1>
+                <p>Have a correction or suggestion? Submit it below and it'll go straight to the sheet.</p>
+                <textarea id="suggestionText" style="width: 90%; height: 120px; margin: 8px 0; padding: 8px; font-size: 14px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;" placeholder="Enter your suggestion here..."></textarea>
+                <br>
+                <button id="suggestionSubmit" onclick="submitSuggestion()" style="padding: 8px 20px; font-size: 14px; cursor: pointer;">Submit</button>
+                <p id="suggestionStatus" style="color: green; display: none;">Submitted!</p>
             </div>
 
             <!-- Tab that opens when you click a name. -->

@@ -1,10 +1,11 @@
  CHANGES/ADDITIONS
  + Main menu
  + Legend
-    
+        Completed by Jiah Spector 3/10/2026
  + Clan logos on trees
         Completed by Jiah Spector 3/9/2026
  + Download tree(s)
         Completed by Jiah Spector 3/9/2026 in util.js
  + Link otherselves in tab
  + Smaller horizontal window size breaks sib placement
+        Doesn't seem to have this issue anymore
