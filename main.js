@@ -828,7 +828,7 @@ function createHouseLogos(container) {
                 let result = findInBand(anchorX, bandTop, strictBottom, logoW, logoH, searchRadius)
 
                 if (result) {
-                    placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                    placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH, tag.name)
                     placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
                     console.log(`[Logo] ${tag.name} ${logoW}×${logoH} TOPBAND at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
                     placed = true
@@ -844,7 +844,7 @@ function createHouseLogos(container) {
                     let logoH = Math.max(40, Math.round(logoW / ratio))
                     let result = findInBand(anchorX, bandTop, bottomY, logoW, logoH, searchRadius)
                     if (result) {
-                        placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                        placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH, tag.name)
                         placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
                         console.log(`[Logo] ${tag.name} ${logoW}×${logoH} FULLHOUSE at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
                         placed = true
@@ -861,7 +861,7 @@ function createHouseLogos(container) {
                 let fy = Math.max(5, topY - logoH - 5)
                 for (let attempt = 0; attempt < 50; attempt++) {
                     if (!placedLogos.some(b => fx < b.right && fx+logoW > b.left && fy < b.bottom && fy+logoH > b.top)) {
-                        placeLogo(container, tag.imageAddress, fx, fy, logoW, logoH)
+                        placeLogo(container, tag.imageAddress, fx, fy, logoW, logoH, tag.name)
                         placedLogos.push({ left: fx, top: fy, right: fx+logoW, bottom: fy+logoH })
                         console.warn(`[Logo] ABOVE FALLBACK ${tag.name} at y:${Math.round(fy)}`)
                         break
@@ -873,7 +873,7 @@ function createHouseLogos(container) {
     })
 }
 // Updated placeLogo — uses explicit width+height on div so collision rect matches display
-function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight, tagName) {
     if (!container || !container.treeDiv) return
     let logoDiv = document.createElement('div')
     logoDiv.classList.add('logo')
@@ -882,13 +882,24 @@ function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
     logoDiv.style.top         = `${yPos}px`
     logoDiv.style.width       = `${logoWidth}px`
     logoDiv.style.height      = `${logoHeight}px`
-    logoDiv.style.zIndex = '-1'
-    logoDiv.style.pointerEvents = 'none'
+    logoDiv.style.zIndex      = '0'
+    logoDiv.style.cursor      = 'pointer'
+    logoDiv.style.opacity     = '1'
+    logoDiv.style.transition  = 'opacity 0.15s'
+
+    logoDiv.addEventListener('mouseenter', () => logoDiv.style.opacity = '0.7')
+    logoDiv.addEventListener('mouseleave', () => logoDiv.style.opacity = '1')
+    logoDiv.addEventListener('click', () => {
+        let tag = getTag(tagName)
+        if (tag) showTab(tagToTab(tag))
+    })
+
     let img = document.createElement('img')
-    img.src            = logoSrc
-    img.style.width    = '100%'
-    img.style.height   = '100%'
+    img.src             = logoSrc
+    img.style.width     = '100%'
+    img.style.height    = '100%'
     img.style.objectFit = 'contain'
+    img.style.pointerEvents = 'none'
     logoDiv.appendChild(img)
     container.treeDiv.appendChild(logoDiv)
 }

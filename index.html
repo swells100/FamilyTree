@@ -78,8 +78,39 @@
             </div>
 
             <!-- Settings tab -->
-            <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'">
-                <h1>This is the family tree for the Gamma Kappa chapter of Phi Gamma Delta. </h1>
+            <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'" style="padding: 12px;">
+                <h1>Legend</h1>
+            
+                <h2>Houses</h2>
+                <div v-for="tag in getSettings().tagData.filter(t => t.type && t.type.includes('HOUSE'))" 
+                     :key="tag.name"
+                     style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;"
+                     @click="displayTagInfo(tag.name)">
+                    <img v-if="tag.imageAddress" 
+                         :src="tag.imageAddress.startsWith('http') ? tag.imageAddress : 'https://drive.google.com/thumbnail?id=' + tag.imageAddress"
+                         style="width: 40px; height: 40px; object-fit: contain;">
+                    <div v-else style="width: 40px; height: 40px; border-radius: 4px;"
+                         :style="{ backgroundColor: tag.borderColor || '#ccc' }"></div>
+                    <div>
+                        <strong>{{ tag.name }}</strong>
+                        <div style="font-size: 0.85em; color: #555;">{{ tag.description }}</div>
+                    </div>
+                </div>
+            
+                <h2>Tags</h2>
+                <div v-for="tag in getSettings().tagData.filter(t => t.type && t.type.includes('SYMBOL') && !t.type.includes('HOUSE'))"
+                     :key="tag.name"
+                     style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;"
+                     @click="displayTagInfo(tag.name)">
+                    <img v-if="tag.imageAddress"
+                         :src="tag.imageAddress.startsWith('http') ? tag.imageAddress : 'https://drive.google.com/thumbnail?id=' + tag.imageAddress"
+                         style="width: 32px; height: 32px; object-fit: contain;">
+                    <div v-else style="width: 32px; height: 32px;"></div>
+                    <div>
+                        <strong>{{ tag.name }}</strong>
+                        <div style="font-size: 0.85em; color: #555;">{{ tag.description }}</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Settings tab -->
