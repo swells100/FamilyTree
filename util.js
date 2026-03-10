@@ -43,7 +43,7 @@ function tagRowToJSON(row) {
     tagJSON.taggedSibs = []
     tagJSON.relatedTags = row[2] == '' ? [] : row[2].split(';')
     tagJSON.type = row[3]
-    if (row[4] != '') tagJSON.imageAddress = row[4]
+    if (row[4] != null && row[4] != '' && row[4].toLowerCase() != 'n/a') tagJSON.imageAddress = row[4]
     if (row[5] != '') tagJSON.borderWidth = row[5]
     if (row[6] != '') tagJSON.borderColor = row[6]
     if (row[7] != '') tagJSON.backgroundColor = row[7]
@@ -53,6 +53,7 @@ function tagRowToJSON(row) {
     if (row[11] != '') tagJSON.fontName = row[11]
     if (row[12] != '') tagJSON.outlineType = row[12]
     if (row[13] != '') tagJSON.outlineColor = row[13]
+    
 
     return tagJSON
 }
@@ -332,8 +333,11 @@ function calculateRelativePositions(container, sib) {
     leftHang = Math.min(thisW/2, buttonWidth - lineWeight/2)
     rightHang = Math.max(thisW/2, thisW - buttonWidth + lineWeight/2)
 
-    hangDiff = thisW/2 - leftHang
-    $( thisBlock ).find( ".line.vert" ).css('right', hangDiff)
+    // hangDiff = thisW/2 - leftHang
+    // $( thisBlock ).find( ".line.vert" ).css('right', hangDiff)
+
+    hangDiff = Math.round(thisW/2 - leftHang)
+    $( thisBlock ).find( ".line.vert" ).css('left', -hangDiff + 'px')
 
     sib.width = thisW
     sib.branchWidths = [[-leftHang, rightHang]]
@@ -475,11 +479,17 @@ function containerlessSibToTab(sibName) {
 
 // Parses tag data into relevant tab data
 function tagToTab(tag) {
+    let imgSrc = undefined
+    if (tag.imageAddress) {
+        imgSrc = tag.imageAddress.startsWith('http') 
+            ? tag.imageAddress 
+            : "https://drive.google.com/thumbnail?id=" + tag.imageAddress
+    }
     tabData = {
         tabType: "tagTab",
         tag: tag,
         name: tag.name,
-        imgSrc: tag.imageAddress ? "https://drive.google.com/thumbnail?id=" + tag.imageAddress : undefined
+        imgSrc: imgSrc
     }
     return tabData
 }
@@ -542,14 +552,7 @@ function goBack() {
     }
 }
 // Goes forward one tab in the tab nav
-function goForward() {
-    appElement.tabPosition++
-    if (appElement.getTabData().ele) {
-        setTimeout(function() {
-            appElement.getTabData().ele.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
-        }, 0)
-    }
-}
+
 
 // Goes back to tree
 function exitTab() {
@@ -601,6 +604,7 @@ function exitTab() {
 //     // });
 // }
 
+/** 
 function saveCurrentTree() {
     let tcc = document.querySelector("#tabsContainerContainer");
     let activeTabIndex = $(tcc).tabs("option", "active"); // Get the index of the active tab
@@ -627,4 +631,130 @@ function saveCurrentTree() {
     }).catch(function(error) {
         console.error("Error capturing the full page:", error);
     });
+}
+*/
+
+/**
+ * Made by Jiah and  claude
+ * 
+ * Might be a bit buggy due to AI use, but I did various tests and it works fine
+ * Pivoted to exporting to PDF rather than trying to use HTML2canvas
+ * 
+ * Should work just fine
+ * 
+ */
+function saveCurrentTree() {
+    let activeContainerTab = Array.from(document.querySelectorAll('.containerTab'))
+        .find(tab => tab.style.height && tab.style.height.includes('100'));
+    if (!activeContainerTab) { console.error("No active tab found."); return; }
+
+    let treeDiv = activeContainerTab.querySelector('.tree');
+    if (!treeDiv) { console.error("No tree div."); return; }
+
+     // Measure full tree dimensions — track all four edges
+    let allRows = Array.from(treeDiv.querySelectorAll('.row, .across, .logo'));
+    if (!allRows.length) { console.error("Tree not loaded yet."); return; }
+
+    let minLeft = Infinity, maxRight = 0, minTop = Infinity, maxBottom = 0;
+    allRows.forEach(el => {
+        minLeft   = Math.min(minLeft,   el.offsetLeft);
+        maxRight  = Math.max(maxRight,  el.offsetLeft + el.offsetWidth);
+        minTop    = Math.min(minTop,    el.offsetTop);
+        maxBottom = Math.max(maxBottom, el.offsetTop  + el.offsetHeight);
+    });
+
+    // If anything bleeds left of zero, we need to shift and widen
+    let leftOverflow = Math.min(0, minLeft);  // negative or zero
+
+    let treeTopMargin = parseInt(
+        getComputedStyle(document.body).getPropertyValue('--treeMarginTop')
+    ) || 0;
+
+    let fullWidth  = Math.ceil(maxRight - leftOverflow) + 40;
+    let fullHeight = Math.ceil(maxBottom + treeTopMargin) + 40;
+
+    console.log(`Printing tree: ${fullWidth} x ${fullHeight}px`);
+
+    // Inject a temporary print stylesheet that:
+    // - hides everything except the tree
+    // - sets the page size to exactly fit the tree
+    let printStyle = document.createElement('style');
+    printStyle.id = 'tree-print-style';
+    printStyle.textContent = `
+        @media print {
+            @page {
+                size: ${fullWidth}px ${fullHeight}px;
+                margin: 0;
+            }
+            html {
+                width:    ${fullWidth}px  !important;
+                height:   ${fullHeight}px !important;
+                overflow: hidden !important;
+                display:  block  !important;
+            }
+            body {
+                width:    ${fullWidth}px  !important;
+                height:   ${fullHeight}px !important;
+                overflow: hidden !important;
+                display:  block  !important;
+                margin:   0      !important;
+                padding:  0      !important;
+            }
+            /* Hide everything at body level */
+            body > * {
+                display: none !important;
+            }
+            /* Except our wrapper */
+            body > #tree-print-wrapper {
+                display:  block    !important;
+                position: absolute !important;
+                top:      0        !important;
+                left:     0        !important;
+                width:    ${fullWidth}px  !important;
+                height:   ${fullHeight}px !important;
+                overflow: hidden   !important;
+                page-break-after:  avoid  !important;
+                page-break-before: avoid  !important;
+                page-break-inside: avoid  !important;
+            }
+            body > #tree-print-wrapper .tree {
+                transform:   none      !important;
+                width:       ${fullWidth}px  !important;
+                height:      ${fullHeight}px !important;
+                position:    absolute  !important;
+                top:         ${treeTopMargin}px !important;
+                left:        ${-leftOverflow}px !important;
+                overflow:    visible   !important;
+                white-space: nowrap    !important;
+                page-break-after:  avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body > #tree-print-wrapper .line {
+                min-width: 3px !important;
+                min-height: 3px !important;
+            }
+        }
+    `;
+    document.head.appendChild(printStyle);
+
+    // Wrap the tree in a print-target div and move it to body root
+    // so the "hide body > *" rule doesn't affect it
+    let wrapper = document.createElement('div');
+    wrapper.id = 'tree-print-wrapper';
+    let treeParent   = treeDiv.parentNode;
+    let treeNextSib  = treeDiv.nextSibling;
+    wrapper.appendChild(treeDiv);
+    document.body.appendChild(wrapper);
+
+    // Give the browser a moment to apply styles before opening print dialog
+    setTimeout(() => {
+        window.print();
+
+        // Restore everything after the print dialog closes
+        setTimeout(() => {
+            treeParent.insertBefore(treeDiv, treeNextSib);
+            document.body.removeChild(wrapper);
+            document.head.removeChild(printStyle);
+        }, 500);
+    }, 150);
 }

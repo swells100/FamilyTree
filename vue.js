@@ -5,7 +5,8 @@ function loadVue() {
             tabHistory: [{ tabType: 'load' }],
             tabPosition: 0,
             split: null,
-            settings: null
+            settings: null,
+            showHouseLogos: true
         },
         methods: {
             getDisplayTab: function() {
@@ -68,7 +69,23 @@ function loadVue() {
                 else tabData = containerlessSibToTab(sibName)
 
                 showTab(tabData)
+            },
+            getHouseLogoSrc: function(sib) {
+                let current = sib
+                while (current) {
+                    let tag = getTag(current.house)
+                    if (tag && tag.imageAddress) return tag.imageAddress
+                    current = current.big
+                }
+                return null
+            },
+            toggleHouseLogos: function() {
+                let logos = document.querySelectorAll('.logo')
+                logos.forEach(logo => {
+                    logo.style.display = this.showHouseLogos ? 'block' : 'none'
+                })
             }
         }
+        
     })
 }

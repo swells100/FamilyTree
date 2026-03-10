@@ -84,7 +84,11 @@
 
             <!-- Settings tab -->
             <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'">
-                <h1>This is where the settings are!</h1>
+                <h1>Settings</h1>
+                <label>
+                    <input type="checkbox" v-model="showHouseLogos" @change="toggleHouseLogos">
+                    Show house logos
+                </label>
             </div>
 
             <!-- Settings tab -->
@@ -93,7 +97,11 @@
             </div>
 
             <!-- Tab that opens when you click a name. -->
-            <div id="nameTab" class="secondaryTab" v-if="getDisplayTab() == 'nameTab'">
+             <div id="nameTab" class="secondaryTab" v-if="getDisplayTab() == 'nameTab'" style="position: relative; overflow: hidden;">
+                    <img v-if="getHouseLogoSrc(getTabData().sib)" 
+                         :src="getHouseLogoSrc(getTabData().sib)"
+                         style="float: right; max-width: 120px; max-height: 120px; object-fit: contain; margin: 8px;">
+                <div style="position: relative; z-index: 1;">
                 <h1>{{ unspecialText(getTabData().sib.name) }}</h1>
                 <h2>{{ getTabData().sib.pledgeClass }}</h2>
                 <h2><button @click="displayTagInfo(getTabData().sib.house)">{{ getTabData().sib.house }}</button></h2>
@@ -128,6 +136,7 @@
                     </li>
                 </ol>
             </div>
+        </div>
 
             <!-- Tag that opens when you click a tab. Wait no -->
             <div id="tagTab" class="secondaryTab" v-if="getDisplayTab() == 'tagTab'">

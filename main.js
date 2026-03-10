@@ -5,15 +5,44 @@ function main() {
     createMenu()
     exitTab()
 
-    // Loops through every container and builds individual trees for each
+    // // Loops through every container and builds individual trees for each
+    // containers.forEach(container => {
+    //     copySiblingSet(container)
+    //     createUnspacedTree(container)
+    //     // Arbitrarily long timer to ensure everything loads properly, 3s is likely overkill
+    //     setTimeout(function(){
+    //         spaceTree(container)
+    //         drawAcrossLines(container)
+    //         makeDraggable(container.containerDiv)
+    //     }, 3000)
+    // })
+
+    //Jiah Fix
+
     containers.forEach(container => {
         copySiblingSet(container)
         createUnspacedTree(container)
-        // Arbitrarily long timer to ensure everything loads properly, 3s is likely overkill
         setTimeout(function(){
+            // Temporarily expand this tab so getBoundingClientRect()
+            // returns real measurements instead of zeros
+            let tabDiv = container.structure['tabs']
+            let savedHeight   = tabDiv.style.height
+            let savedOverflow = tabDiv.style.overflow
+            let savedDisplay  = tabDiv.style.display
+            tabDiv.style.height   = '2000px'
+            tabDiv.style.overflow = 'visible'
+            tabDiv.style.display  = 'block'
+    
             spaceTree(container)
             drawAcrossLines(container)
+            createHouseLogos(container)
+            createHouseBackground(container)
             makeDraggable(container.containerDiv)
+    
+            // Restore original state
+            tabDiv.style.height   = savedHeight
+            tabDiv.style.overflow = savedOverflow
+            tabDiv.style.display  = savedDisplay
         }, 3000)
     })
 }
@@ -615,7 +644,10 @@ function spaceTree(container) {
             sibBlock = sib.div
             sibBlock.style.marginLeft = space + "px"
 
-            prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
+            //prevEnd = sibBlock.getBoundingClientRect().right - container.containerDiv.getBoundingClientRect().left - treeMarginLeft
+            
+            //Jiah
+            prevEnd = sib.position + sib.branchWidths[0][1]
         })
     }
 
@@ -680,34 +712,246 @@ function drawAcrossLines(container) {
     }
 }
 
-// Function to read house logos and call to place them
-function createHouseLogos() {
+/**
+ * By Jiah and Claude
+ * 
+ * Welp, I got this to work at last but it comes with some issues
+ * 
+ * The main bug I've found is that if you zoom out while its still loading if fucks up
+ * the placements of the icons, otherwise it works great and should be future proof when more icons
+ * come into play
+ *  
+ */
+function createHouseLogos(container) {
+    let blockHeight = settings.sizes['blockHeight']
+    let lineWeight  = settings.sizes['lineWeight']
+    let rowSpacing  = blockHeight + lineWeight
+    let pad = 8
 
-}
+    let sibBoxes = container.siblings.map(sib => {
+        let btn = sib.div ? sib.div.querySelector('button') : null
+        let nas = sib.div ? sib.div.querySelector('.nameAndSymbols') : null
+        let btnW = btn ? btn.offsetWidth : 80
+        let nasW = nas ? nas.offsetWidth : btnW
+        let btnLeft = sib.position - btnW / 2
+        return {
+            left:   btnLeft - pad,
+            right:  btnLeft + nasW + pad,
+            top:    sib.height * rowSpacing - pad,
+            bottom: sib.height * rowSpacing + blockHeight + pad
+        }
+    })
 
-// Function to place a logo at a specific position in the tree
-function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+    let treeDivRect = container.treeDiv.getBoundingClientRect()
+    container.treeDiv.querySelectorAll('.line:not(.transparent)').forEach(lineEl => {
+        let r = lineEl.getBoundingClientRect()
+        if (r.width === 0 && r.height === 0) return
+        sibBoxes.push({
+            left:   r.left   - treeDivRect.left - pad,
+            right:  r.right  - treeDivRect.left + pad,
+            top:    r.top    - treeDivRect.top  - pad,
+            bottom: r.bottom - treeDivRect.top  + pad
+        })
+    })
 
-    if (!container || !container.treeDiv) {
-        console.error("treeDiv is not defined for the container.");
-        return;
+    let placedLogos = []
+
+    function overlapsAny(gx, gy, gw, gh) {
+        let gx2 = gx + gw, gy2 = gy + gh
+        for (let b of sibBoxes)    { if (gx < b.right && gx2 > b.left && gy < b.bottom && gy2 > b.top) return true }
+        for (let b of placedLogos) { if (gx < b.right && gx2 > b.left && gy < b.bottom && gy2 > b.top) return true }
+        return false
     }
 
-    let logoDiv = document.createElement("div");
-    logoDiv.classList.add("logo");  // You can style this class to control its appearance
-    logoDiv.style.position = "absolute";
-    logoDiv.style.left = `${xPos}px`;   // Position the logo horizontally (adjust as needed)
-    logoDiv.style.top = `${yPos}px`;    // Position the logo vertically (adjust as needed)
-    logoDiv.style.width = `${logoWidth}px`;  // Set logo width
-    logoDiv.style.height = `${logoHeight}px`; // Set logo height
+    // Search top-first within a Y band, clamp X >= 10 to avoid screen clip
+    function findInBand(anchorX, bandTop, bandBottom, logoW, logoH, searchRadius) {
+        let step = 8
+        let candidates = []
+        for (let gy = bandTop; gy <= bandBottom; gy += step) {
+            for (let gx = Math.max(10, anchorX - searchRadius); gx <= anchorX + searchRadius; gx += step) {
+                candidates.push({ gx, gy, dx: Math.abs((gx + logoW/2) - anchorX) })
+            }
+        }
+        // Top-first, then closest to anchor center
+        candidates.sort((a, b) => a.gy !== b.gy ? a.gy - b.gy : a.dx - b.dx)
+        for (let c of candidates) {
+            if (!overlapsAny(c.gx, c.gy, logoW, logoH)) return { x: c.gx, y: c.gy }
+        }
+        return null
+    }
 
-    let img = document.createElement("img");
-    console.log(logoSrc);
-    img.src = "https://drive.google.com/thumbnail?id=" + logoSrc; // Path to the logo
-    img.alt = "Tree Logo";  // Alt text for accessibility
-    img.style.width = "100%";  // Make sure the image fits the container
-    img.style.height = "100%"; // Adjust to fit within the div
+    let houseTags = settings.tagData.filter(t => t.type.includes('HOUSE') && t.imageAddress)
+    houseTags.sort((a, b) => {
+        let aC = container.siblings.filter(s => s.house === a.name && !s.tags.includes('stub')).length
+        let bC = container.siblings.filter(s => s.house === b.name && !s.tags.includes('stub')).length
+        return bC - aC
+    })
 
-    logoDiv.appendChild(img);
-    container.treeDiv.appendChild(logoDiv);  // Append logo to the tree container
+    let imageRatios = {}
+    let loadPromises = houseTags.map(tag => new Promise(resolve => {
+        let img = new Image()
+        img.onload  = () => { imageRatios[tag.name] = img.naturalWidth / img.naturalHeight; resolve() }
+        img.onerror = () => { imageRatios[tag.name] = 1; resolve() }
+        img.src = tag.imageAddress
+    }))
+
+    Promise.all(loadPromises).then(() => {
+        houseTags.forEach(tag => {
+            let houseSibs = container.siblings.filter(s => s.house === tag.name && !s.tags.includes('stub'))
+            if (houseSibs.length === 0) return
+
+            let memberCount = houseSibs.length
+            let ratio = imageRatios[tag.name] || 1
+            let baseW = Math.min(700, Math.max(220, Math.sqrt(memberCount) * 65))
+
+            let minH = Math.min(...houseSibs.map(s => s.height))
+            let maxH = Math.max(...houseSibs.map(s => s.height))
+            let topY    = Math.max(5, minH * rowSpacing)
+            let bottomY = maxH * rowSpacing + blockHeight
+
+            let anchorX = houseSibs.reduce((s, m) => s + m.position, 0) / houseSibs.length
+            let searchRadius = Math.max(baseW * 2, (bottomY - topY) * 0.5 + baseW)
+
+            // Band top: 2 rows above clan heads so logo can sit just above them
+            let bandTop = Math.max(10, topY - rowSpacing * 2)
+
+            const sizeFactors = [1.0, 0.85, 0.7, 0.58, 0.46, 0.36, 0.27, 0.2]
+            let placed = false
+
+            for (let f of sizeFactors) {
+                let logoW = Math.max(60, Math.floor(baseW * f))
+                let logoH = Math.max(40, Math.round(logoW / ratio))
+
+                // PASS 1: strict top band — only search top 5 rows of the house
+                // This forces logos to stay near clan heads, never drift to bottom
+                let strictBottom = Math.min(bandTop + rowSpacing * 5, bottomY)
+                let result = findInBand(anchorX, bandTop, strictBottom, logoW, logoH, searchRadius)
+
+                if (result) {
+                    placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                    placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
+                    console.log(`[Logo] ${tag.name} ${logoW}×${logoH} TOPBAND at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
+                    placed = true
+                    break
+                }
+            }
+
+            // PASS 2: if nothing fit in top 5 rows even at smallest size,
+            // expand to full house height (still top-first, still won't go below house)
+            if (!placed) {
+                for (let f of sizeFactors) {
+                    let logoW = Math.max(60, Math.floor(baseW * f))
+                    let logoH = Math.max(40, Math.round(logoW / ratio))
+                    let result = findInBand(anchorX, bandTop, bottomY, logoW, logoH, searchRadius)
+                    if (result) {
+                        placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                        placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
+                        console.log(`[Logo] ${tag.name} ${logoW}×${logoH} FULLHOUSE at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
+                        placed = true
+                        break
+                    }
+                }
+            }
+
+            // PASS 3: absolute last resort — place above house, never below
+            if (!placed) {
+                let logoW = Math.max(60, Math.floor(baseW * 0.3))
+                let logoH = Math.max(40, Math.round(logoW / ratio))
+                let fx = Math.max(10, anchorX - logoW / 2)
+                let fy = Math.max(5, topY - logoH - 5)
+                for (let attempt = 0; attempt < 50; attempt++) {
+                    if (!placedLogos.some(b => fx < b.right && fx+logoW > b.left && fy < b.bottom && fy+logoH > b.top)) {
+                        placeLogo(container, tag.imageAddress, fx, fy, logoW, logoH)
+                        placedLogos.push({ left: fx, top: fy, right: fx+logoW, bottom: fy+logoH })
+                        console.warn(`[Logo] ABOVE FALLBACK ${tag.name} at y:${Math.round(fy)}`)
+                        break
+                    }
+                    fy -= logoH + 5
+                }
+            }
+        })
+    })
 }
+// Updated placeLogo — uses explicit width+height on div so collision rect matches display
+function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+    if (!container || !container.treeDiv) return
+    let logoDiv = document.createElement('div')
+    logoDiv.classList.add('logo')
+    logoDiv.style.position    = 'absolute'
+    logoDiv.style.left        = `${xPos}px`
+    logoDiv.style.top         = `${yPos}px`
+    logoDiv.style.width       = `${logoWidth}px`
+    logoDiv.style.height      = `${logoHeight}px`
+    logoDiv.style.zIndex = '-1'
+    logoDiv.style.pointerEvents = 'none'
+    let img = document.createElement('img')
+    img.src            = logoSrc
+    img.style.width    = '100%'
+    img.style.height   = '100%'
+    img.style.objectFit = 'contain'
+    logoDiv.appendChild(img)
+    container.treeDiv.appendChild(logoDiv)
+}
+
+function createHouseBackground(container) {
+    // Find all houses in this container that have logos
+    let taggedHouses = container.houses
+        .map(h => getTag(h))
+        .filter(t => t && t.imageAddress)
+
+    // Skip the main combined tree (many houses with logos)
+    if (taggedHouses.length > 5) return
+
+    // Pick the house with the most non-stub members
+    let primaryTag = taggedHouses.sort((a, b) => {
+        let aC = container.siblings.filter(s => s.house === a.name && !s.tags.includes('stub')).length
+        let bC = container.siblings.filter(s => s.house === b.name && !s.tags.includes('stub')).length
+        return bC - aC
+    })[0]
+
+    if (!primaryTag) return
+
+    let tabDiv = container.structure['tabs']
+    tabDiv.style.position = 'relative'
+
+    let bg = document.createElement('img')
+    bg.src = primaryTag.imageAddress
+    bg.style.position      = 'absolute'
+    bg.style.top           = '50%'
+    bg.style.left          = '50%'
+    bg.style.transform     = 'translate(-50%, -50%)'
+    bg.style.width         = '80%'
+    bg.style.opacity       = '0.05'
+    bg.style.pointerEvents = 'none'
+    bg.style.zIndex        = '0'
+    bg.style.objectFit     = 'contain'
+
+    tabDiv.insertBefore(bg, tabDiv.firstChild)
+}
+
+// // Function to place a logo at a specific position in the tree
+// function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+
+//     if (!container || !container.treeDiv) {
+//         console.error("treeDiv is not defined for the container.");
+//         return;
+//     }
+
+//     let logoDiv = document.createElement("div");
+//     logoDiv.classList.add("logo");  // You can style this class to control its appearance
+//     logoDiv.style.position = "absolute";
+//     logoDiv.style.left = `${xPos}px`;   // Position the logo horizontally (adjust as needed)
+//     logoDiv.style.top = `${yPos}px`;    // Position the logo vertically (adjust as needed)
+//     logoDiv.style.width = `${logoWidth}px`;  // Set logo width
+//     logoDiv.style.height = `${logoHeight}px`; // Set logo height
+
+//     let img = document.createElement("img");
+//     console.log(logoSrc);
+//     img.src = "https://drive.google.com/thumbnail?id=" + logoSrc; // Path to the logo
+//     img.alt = "Tree Logo";  // Alt text for accessibility
+//     img.style.width = "100%";  // Make sure the image fits the container
+//     img.style.height = "100%"; // Adjust to fit within the div
+
+//     logoDiv.appendChild(img);
+//     container.treeDiv.appendChild(logoDiv);  // Append logo to the tree container
+// }
