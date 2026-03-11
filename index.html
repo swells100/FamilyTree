@@ -117,7 +117,7 @@
             </div>
 
             <!-- Settings tab -->
-            <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'">
+            <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'" style="padding: 12px;">
                 <h1>Settings</h1>
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" v-model="showHouseLogos" @change="toggleHouseLogos">
@@ -127,11 +127,21 @@
                     <input type="checkbox" v-model="showTagSymbols" @change="toggleTagSymbols">
                     Show tag symbols
                 </label>
+                <h3 style="margin: 8px 0 4px;">Print Settings</h3>
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" v-model="printWithLegend">
                     Print with legend
                 </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="printWithBackground">
+                    Print with background (subtrees only)
+                </label>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                    <span style="white-space: nowrap;">Print Margin: {{ formatMargin() }}&quot;</span>
+                    <input type="range" min="0" max="2" step="0.125" v-model.number="printMargin" style="flex: 1;">
+                </div>
                 <div v-if="printWithLegend" style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <h3 style="margin: 8px 0 4px;">Legend Settings</h3>
                     <label style="display: flex; align-items: center; gap: 8px;">
                         Legend Size: {{ legendWidth }}px
                         <input type="range" min="100" max="400" step="10" v-model.number="legendWidth" style="flex: 1;">

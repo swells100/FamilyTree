@@ -10,7 +10,9 @@ function loadVue() {
             showTagSymbols: true,
             printWithLegend: true,
             legendWidth: 220,
-            legendSide: 'left'
+            legendSide: 'left',
+            printMargin: 0.5,
+            printWithBackground: true
         },
         methods: {
             getDisplayTab: function() {
@@ -95,6 +97,9 @@ function loadVue() {
                 symbols.forEach(s => {
                     s.style.display = this.showTagSymbols ? 'inline' : 'none'
                 })
+            },
+            formatMargin: function() {
+                return parseFloat(this.printMargin || 0).toFixed(2)
             }
         }
         

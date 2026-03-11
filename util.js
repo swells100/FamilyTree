@@ -788,6 +788,25 @@ function saveCurrentTree() {
     let treeContainer = document.createElement('div')
     treeContainer.id = 'tree-print-treecontainer'
     treeContainer.style.cssText = `position: absolute; left: ${treeLeft}px; top: 0; width: ${fullWidth - legendWidth}px; height: ${fullHeight}px;`
+
+    // Clone the house background image into the print container if enabled
+    if (appElement.printWithBackground) {
+        let bgImg = activeContainerTab.querySelector('img:not([class])')
+        if (bgImg && bgImg.style.position === 'absolute') {
+            let bgClone = bgImg.cloneNode(true)
+            bgClone.style.width  = `${fullWidth - legendWidth}px`
+            bgClone.style.height = `${fullHeight}px`
+            bgClone.style.top    = '0'
+            bgClone.style.left   = '0'
+            bgClone.style.transform = 'none'
+            bgClone.style.opacity   = '0.08'
+            bgClone.style.objectFit = 'contain'
+            bgClone.style.pointerEvents = 'none'
+            bgClone.style.zIndex = '0'
+            treeContainer.appendChild(bgClone)
+        }
+    }
+
     let treeParent  = treeDiv.parentNode;
     let treeNextSib = treeDiv.nextSibling;
     treeContainer.appendChild(treeDiv)
@@ -796,13 +815,16 @@ function saveCurrentTree() {
 
     let printStyle = document.createElement('style');
     printStyle.id = 'tree-print-style';
+    let marginPx = Math.round((appElement.printMargin || 0) * 96);
+    let totalWidth  = fullWidth  + marginPx * 2;
+    let totalHeight = fullHeight + marginPx * 2;
     printStyle.textContent = `
         @media print {
-            @page { size: ${fullWidth}px ${fullHeight}px; margin: 0; }
-            html { width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; display: block !important; page-break-after: avoid !important; }
-            body { width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; display: block !important; margin: 0 !important; padding: 0 !important; page-break-after: avoid !important; }
+            @page { size: ${totalWidth}px ${totalHeight}px; margin: 0; }
+            html { width: ${totalWidth}px !important; height: ${totalHeight}px !important; overflow: hidden !important; display: block !important; page-break-after: avoid !important; }
+            body { width: ${totalWidth}px !important; height: ${totalHeight}px !important; overflow: hidden !important; display: block !important; margin: 0 !important; padding: 0 !important; page-break-after: avoid !important; }
             body > * { display: none !important; }
-            body > #tree-print-wrapper { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
+            body > #tree-print-wrapper { display: block !important; position: absolute !important; top: ${marginPx}px !important; left: ${marginPx}px !important; width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
             body > #tree-print-wrapper #tree-print-treecontainer .tree {
                 transform: none !important;
                 width: ${fullWidth - legendWidth}px !important;
