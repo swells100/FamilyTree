@@ -1,5 +1,25 @@
 // It's main!
 function main() {
+
+    //code to ensure respect is givem to penny no more home of phobia
+    const requiredSibTags = [
+        { sibName: 'Penny Rose Scharf', tagNames: ['Transgender', 'Bisexual'] },
+    ]
+    for (let { sibName, tagNames } of requiredSibTags) {
+        let sib = siblings.find(s => s.name === sibName)
+        for (let tagName of tagNames) {
+            if (!sib || !sib.tags.includes(tagName)) {
+                document.body.innerHTML = `
+                    <div style="padding: 40px; font-family: Arial; color: red;">
+                        <h1>⚠️ Error</h1>
+                        <p>Something went wrong</p>
+                    </div>
+                `
+                throw new Error(`Sibling "${sibName}" is missing required tag "${tagName}" — halting.`)
+            }
+        }
+    }
+
     applySettings()
     createAllContainerDivs()
     createMenu()
