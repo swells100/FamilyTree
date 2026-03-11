@@ -75,11 +75,10 @@
         <div id="rightColContainer" v-if="getDisplayTab() != 'mainMenu'" class="col right">
             <!-- Buttons -->
             <div class="tabNavButtonContainer barTop" v-if="getDisplayTab() != 'tree'">
-                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1;">←</button>
-                <button :style="{ opacity: canGoForward() ? 1 : 0 }" onclick="goForward()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1;">→</button>
-                <button onclick="exitTab()" class="tabNavButton right clickable" style="font-size: 24px; line-height: 1;">×</button>
+                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#9664;</button>
+                <button :style="{ opacity: canGoForward() ? 1 : 0 }" onclick="goForward()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#9654;</button>
+                <button onclick="exitTab()" class="tabNavButton right clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#10005;</button>
             </div>
-
             <!-- Settings tab -->
             <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'" style="padding: 12px;">
                 <h1>Tree Legend</h1>
@@ -127,6 +126,20 @@
                     <input type="checkbox" v-model="showTagSymbols" @change="toggleTagSymbols">
                     Show tag symbols
                 </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="printWithLegend">
+                    Print with legend
+                </label>
+                <div v-if="printWithLegend" style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        Legend Size: {{ legendWidth }}px
+                        <input type="range" min="100" max="400" step="10" v-model.number="legendWidth" style="flex: 1;">
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <button @click="legendSide = 'left'"  :style="{ fontWeight: legendSide == 'left'  ? 'bold' : 'normal', background: legendSide == 'left'  ? '#ddd' : '' }" style="flex: 1; padding: 4px; cursor: pointer;">Left</button>
+                        <button @click="legendSide = 'right'" :style="{ fontWeight: legendSide == 'right' ? 'bold' : 'normal', background: legendSide == 'right' ? '#ddd' : '' }" style="flex: 1; padding: 4px; cursor: pointer;">Right</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Settings tab -->

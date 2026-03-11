@@ -7,7 +7,10 @@ function loadVue() {
             split: null,
             settings: null,
             showHouseLogos: true,
-            showTagSymbols: true
+            showTagSymbols: true,
+            printWithLegend: true,
+            legendWidth: 220,
+            legendSide: 'left'
         },
         methods: {
             getDisplayTab: function() {
@@ -20,7 +23,7 @@ function loadVue() {
                 return this.settings
             },
             canGoBackward: function() {
-                return this.tabPosition > 1
+                return this.tabPosition >= 1
             },
             canGoForward: function() {
                 return this.tabPosition < this.tabHistory.length - 1

@@ -30,8 +30,8 @@ html, body {
     flex: auto;
     display: flex;
     flex-direction: column;
-
     background: #f6f6f6;
+    overflow: hidden;
 }
 
 .fullWidth {
@@ -53,6 +53,7 @@ html, body {
     align-items: center;
     border-bottom: 4px solid #ddd;
     background: #e9e9e9;
+    overflow: visible;
 }
 .menuItem {
     height: 32px;
@@ -176,9 +177,14 @@ html, body {
 
 .tabNavButton {
     background-color: transparent;
-	border: 1px solid transparent;
-	font-size: 40px;
+    border: 1px solid transparent;
+    font-size: 28px;
     margin-left: 6px;
+    font-family: Arial, sans-serif !important;
+    color: #333333 !important;
+    line-height: 56px;
+    height: 56px;
+    padding: 0;
 }
 .tabNavButton.right {
     margin-left: auto;
@@ -187,6 +193,8 @@ html, body {
 
 .secondaryTab {
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .newline {

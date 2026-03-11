@@ -91,7 +91,7 @@ function getSheetValues() {
         'Siblings!A2:H',
         'Size Settings!A2:B',
         'Misc Settings!A2:B',
-        'Tag Settings!A2:N',
+        'Tag Settings!A2:O',
         'Conjunction Grid!A1:N',
         'Container Settings!A2:E'
     ];

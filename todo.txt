@@ -1,11 +1,18 @@
  CHANGES/ADDITIONS
  + Main menu
+        Feels a bit unneccasry, but could be worth looking into in the future
  + Legend
         Completed by Jiah Spector 3/10/2026
+ + Printable Legend
+    Idea: print on side of tree, use sheet to mark y/n on printOnlegend
+    then compile in similar way to the legend on info tab
  + Clan logos on trees
         Completed by Jiah Spector 3/9/2026
+        Logos can be resized and dragged around, as well as clicked on for more info
  + Download tree(s)
         Completed by Jiah Spector 3/9/2026 in util.js
  + Link otherselves in tab
+        Dont know what this means tbh
+
  + Smaller horizontal window size breaks sib placement
-        Doesn't seem to have this issue anymore
+        Doesn't seem to have this issue anymore so done?

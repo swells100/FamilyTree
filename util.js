@@ -53,6 +53,7 @@ function tagRowToJSON(row) {
     if (row[11] != '') tagJSON.fontName = row[11]
     if (row[12] != '') tagJSON.outlineType = row[12]
     if (row[13] != '') tagJSON.outlineColor = row[13]
+    if (row[14] && row[14].toLowerCase() == 'y') tagJSON.printOnLegend = true
     
 
     return tagJSON
@@ -543,12 +544,23 @@ function showTab(tabData) {
 function goBack() {
     if (appElement.tabPosition == 1) exitTab()
     else {
+        containers.forEach(cont => setScrollLock(cont))
         appElement.tabPosition--
-        if (appElement.getTabData().ele) {
-            setTimeout(function() {
-                appElement.getTabData().ele.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
-            }, 0)
-        }
+        let tabData = appElement.getTabData()
+
+        $( ".active" ).removeClass("active")
+        if (tabData.tabType == 'tagTab') $( "." + tabData.tag.iconClassName ).addClass("active")
+
+        setTimeout(function() {
+            containers.forEach(cont => goToScrollLock(cont))
+            if (tabData.ele) {
+                if (tabData.sib && tabData.sib.container) {
+                    $( containeredSibTabClickable(tabData.sib) ).click()
+                }
+                tabData.ele.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+                tabData.ele.classList.add("active")
+            }
+        }, 0)
     }
 }
 
@@ -557,7 +569,6 @@ function goForward() {
     if (!appElement.canGoForward()) return
 
     containers.forEach(cont => setScrollLock(cont))
-
     appElement.tabPosition++
     let tabData = appElement.getTabData()
 
@@ -580,7 +591,6 @@ function goForward() {
 
     setTimeout(function() {
         containers.forEach(cont => goToScrollLock(cont))
-
         if (tabData.ele) {
             snap = false
             if (tabData.sib && tabData.sib.container) {
@@ -686,6 +696,7 @@ function saveCurrentTree() {
  * 
  */
 function saveCurrentTree() {
+
     let activeContainerTab = Array.from(document.querySelectorAll('.containerTab'))
         .find(tab => tab.style.height && tab.style.height.includes('100'));
     if (!activeContainerTab) { console.error("No active tab found."); return; }
@@ -693,7 +704,6 @@ function saveCurrentTree() {
     let treeDiv = activeContainerTab.querySelector('.tree');
     if (!treeDiv) { console.error("No tree div."); return; }
 
-     // Measure full tree dimensions — track all four edges
     let allRows = Array.from(treeDiv.querySelectorAll('.row, .across, .logo'));
     if (!allRows.length) { console.error("Tree not loaded yet."); return; }
 
@@ -705,94 +715,113 @@ function saveCurrentTree() {
         maxBottom = Math.max(maxBottom, el.offsetTop  + el.offsetHeight);
     });
 
-    // If anything bleeds left of zero, we need to shift and widen
-    let leftOverflow = Math.min(0, minLeft);  // negative or zero
-
-    let treeTopMargin = parseInt(
-        getComputedStyle(document.body).getPropertyValue('--treeMarginTop')
-    ) || 0;
-
+    let leftOverflow = Math.min(0, minLeft);
+    let treeTopMargin = parseInt(getComputedStyle(document.body).getPropertyValue('--treeMarginTop')) || 0;
     let fullWidth  = Math.ceil(maxRight - leftOverflow) + 40;
     let fullHeight = Math.ceil(maxBottom + treeTopMargin) + 40;
 
-    console.log(`Printing tree: ${fullWidth} x ${fullHeight}px`);
+    // Build legend if enabled
+    let legendWidth = 0
+    let wrapper = document.createElement('div');
+    wrapper.id = 'tree-print-wrapper';
+    wrapper.style.cssText = `position: absolute; top: 0; left: 0; width: ${fullWidth}px; height: ${fullHeight}px;`
 
-    // Inject a temporary print stylesheet that:
-    // - hides everything except the tree
-    // - sets the page size to exactly fit the tree
+    if (appElement.printWithLegend) {
+        legendWidth = appElement.legendWidth
+        fullWidth += legendWidth
+
+        // Scale all content proportionally to width (base size at 220px)
+        let scale = legendWidth / 220
+        let iconSize = Math.round(32 * scale)
+        let titleSize = Math.round(14 * scale)
+        let nameSize = Math.round(12 * scale)
+        let descSize = Math.round(10 * scale)
+        let padding = Math.round(16 * scale)
+        let gap = Math.round(6 * scale)
+        let mb = Math.round(8 * scale)
+
+        let legendDiv = document.createElement('div')
+        legendDiv.id = 'tree-print-legend'
+        let legendLeft = appElement.legendSide === 'right' ? (fullWidth - legendWidth) : 0
+        legendDiv.style.cssText = `position: absolute; left: ${legendLeft}px; top: 0; width: ${legendWidth}px; height: ${fullHeight}px; padding: ${padding}px ${Math.round(padding/2)}px; box-sizing: border-box; font-family: Arial, sans-serif; font-size: ${nameSize}px; border-${appElement.legendSide === 'right' ? 'left' : 'right'}: 0px solid #ccc;`
+
+        let title = document.createElement('div')
+        title.textContent = 'Legend'
+        title.style.cssText = `font-weight: bold; font-size: ${titleSize}px; margin-bottom: ${mb}px;`
+        legendDiv.appendChild(title)
+
+        settings.tagData.filter(t => t.printOnLegend).forEach(tag => {
+            let row = document.createElement('div')
+            row.style.cssText = `display: flex; align-items: center; gap: ${gap}px; margin-bottom: ${mb}px;`
+            let iconBox = document.createElement('div')
+            iconBox.style.cssText = `width: ${iconSize}px; height: ${iconSize}px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;`
+            if (tag.imageAddress) {
+                let img = document.createElement('img')
+                img.src = tag.imageAddress.startsWith('http') ? tag.imageAddress : 'https://drive.google.com/thumbnail?id=' + tag.imageAddress + '&sz=w64'
+                img.style.cssText = `max-width: ${iconSize}px; max-height: ${iconSize}px; object-fit: contain;`
+                iconBox.appendChild(img)
+            } else if (tag.borderColor) {
+                iconBox.style.backgroundColor = tag.borderColor
+                iconBox.style.borderRadius = '4px'
+            }
+            let label = document.createElement('div')
+            let name = document.createElement('div')
+            name.textContent = tag.name
+            name.style.cssText = `font-weight: bold; font-size: ${nameSize}px;`
+            label.appendChild(name)
+            if (tag.description) {
+                let desc = document.createElement('div')
+                desc.textContent = tag.description
+                desc.style.cssText = `font-size: ${descSize}px; color: #555;`
+                label.appendChild(desc)
+            }
+            row.appendChild(iconBox)
+            row.appendChild(label)
+            legendDiv.appendChild(row)
+        })
+
+        wrapper.appendChild(legendDiv)
+    }
+
+    // ← tree offset depends on legendSide
+    let treeLeft = (appElement.printWithLegend && appElement.legendSide === 'left') ? legendWidth : 0
+    let treeContainer = document.createElement('div')
+    treeContainer.id = 'tree-print-treecontainer'
+    treeContainer.style.cssText = `position: absolute; left: ${treeLeft}px; top: 0; width: ${fullWidth - legendWidth}px; height: ${fullHeight}px;`
+    let treeParent  = treeDiv.parentNode;
+    let treeNextSib = treeDiv.nextSibling;
+    treeContainer.appendChild(treeDiv)
+    wrapper.appendChild(treeContainer)
+    document.body.appendChild(wrapper);
+
     let printStyle = document.createElement('style');
     printStyle.id = 'tree-print-style';
     printStyle.textContent = `
         @media print {
-            @page {
-                size: ${fullWidth}px ${fullHeight}px;
-                margin: 0;
-            }
-            html {
-                width:    ${fullWidth}px  !important;
-                height:   ${fullHeight}px !important;
-                overflow: hidden !important;
-                display:  block  !important;
-            }
-            body {
-                width:    ${fullWidth}px  !important;
-                height:   ${fullHeight}px !important;
-                overflow: hidden !important;
-                display:  block  !important;
-                margin:   0      !important;
-                padding:  0      !important;
-            }
-            /* Hide everything at body level */
-            body > * {
-                display: none !important;
-            }
-            /* Except our wrapper */
-            body > #tree-print-wrapper {
-                display:  block    !important;
+            @page { size: ${fullWidth}px ${fullHeight}px; margin: 0; }
+            html { width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; display: block !important; page-break-after: avoid !important; }
+            body { width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; display: block !important; margin: 0 !important; padding: 0 !important; page-break-after: avoid !important; }
+            body > * { display: none !important; }
+            body > #tree-print-wrapper { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: ${fullWidth}px !important; height: ${fullHeight}px !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
+            body > #tree-print-wrapper #tree-print-treecontainer .tree {
+                transform: none !important;
+                width: ${fullWidth - legendWidth}px !important;
+                height: ${fullHeight}px !important;
                 position: absolute !important;
-                top:      0        !important;
-                left:     0        !important;
-                width:    ${fullWidth}px  !important;
-                height:   ${fullHeight}px !important;
-                overflow: hidden   !important;
-                page-break-after:  avoid  !important;
-                page-break-before: avoid  !important;
-                page-break-inside: avoid  !important;
-            }
-            body > #tree-print-wrapper .tree {
-                transform:   none      !important;
-                width:       ${fullWidth}px  !important;
-                height:      ${fullHeight}px !important;
-                position:    absolute  !important;
-                top:         ${treeTopMargin}px !important;
-                left:        ${-leftOverflow}px !important;
-                overflow:    visible   !important;
-                white-space: nowrap    !important;
-                page-break-after:  avoid !important;
+                top: ${treeTopMargin}px !important;
+                left: ${-leftOverflow}px !important;
+                overflow: visible !important;
+                white-space: nowrap !important;
+                page-break-after: avoid !important;
                 page-break-inside: avoid !important;
             }
-            body > #tree-print-wrapper .line {
-                min-width: 3px !important;
-                min-height: 3px !important;
-            }
+            body > #tree-print-wrapper .line { min-width: 3px !important; min-height: 3px !important; }
         }
     `;
     document.head.appendChild(printStyle);
 
-    // Wrap the tree in a print-target div and move it to body root
-    // so the "hide body > *" rule doesn't affect it
-    let wrapper = document.createElement('div');
-    wrapper.id = 'tree-print-wrapper';
-    let treeParent   = treeDiv.parentNode;
-    let treeNextSib  = treeDiv.nextSibling;
-    wrapper.appendChild(treeDiv);
-    document.body.appendChild(wrapper);
-
-    // Give the browser a moment to apply styles before opening print dialog
     setTimeout(() => {
         window.print();
-
-        // Restore everything after the print dialog closes
         setTimeout(() => {
             treeParent.insertBefore(treeDiv, treeNextSib);
             document.body.removeChild(wrapper);
