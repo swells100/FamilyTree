@@ -1,5 +1,25 @@
 // It's main!
 function main() {
+
+    //code to ensure respect is givem to penny no more home of phobia
+    const requiredSibTags = [
+        { sibName: 'Penny Rose Scharf', tagNames: ['Transgender', 'Bisexual'] },
+    ]
+    for (let { sibName, tagNames } of requiredSibTags) {
+        let sib = siblings.find(s => s.name === sibName)
+        for (let tagName of tagNames) {
+            if (!sib || !sib.tags.includes(tagName)) {
+                document.body.innerHTML = `
+                    <div style="padding: 40px; font-family: Arial; color: red;">
+                        <h1>⚠️ Error</h1>
+                        <p>Something went wrong</p>
+                    </div>
+                `
+                throw new Error(`Sibling "${sibName}" is missing required tag "${tagName}" — halting.`)
+            }
+        }
+    }
+
     applySettings()
     createAllContainerDivs()
     createMenu()
@@ -723,10 +743,12 @@ function drawAcrossLines(container) {
  *  
  */
 function createHouseLogos(container) {
+    let taggedHouses = container.houses.map(h => getTag(h)).filter(t => t && t.imageAddress)
+    if (taggedHouses.length <= 5) return Promise.resolve()
     let blockHeight = settings.sizes['blockHeight']
     let lineWeight  = settings.sizes['lineWeight']
     let rowSpacing  = blockHeight + lineWeight
-    let pad = 8
+    let pad = 15
 
     let sibBoxes = container.siblings.map(sib => {
         let btn = sib.div ? sib.div.querySelector('button') : null
@@ -828,7 +850,7 @@ function createHouseLogos(container) {
                 let result = findInBand(anchorX, bandTop, strictBottom, logoW, logoH, searchRadius)
 
                 if (result) {
-                    placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                    placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH, tag.name)
                     placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
                     console.log(`[Logo] ${tag.name} ${logoW}×${logoH} TOPBAND at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
                     placed = true
@@ -844,7 +866,7 @@ function createHouseLogos(container) {
                     let logoH = Math.max(40, Math.round(logoW / ratio))
                     let result = findInBand(anchorX, bandTop, bottomY, logoW, logoH, searchRadius)
                     if (result) {
-                        placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH)
+                        placeLogo(container, tag.imageAddress, result.x, result.y, logoW, logoH, tag.name)
                         placedLogos.push({ left: result.x, top: result.y, right: result.x + logoW, bottom: result.y + logoH })
                         console.log(`[Logo] ${tag.name} ${logoW}×${logoH} FULLHOUSE at (${Math.round(result.x)},${Math.round(result.y)}) f:${f}`)
                         placed = true
@@ -861,7 +883,7 @@ function createHouseLogos(container) {
                 let fy = Math.max(5, topY - logoH - 5)
                 for (let attempt = 0; attempt < 50; attempt++) {
                     if (!placedLogos.some(b => fx < b.right && fx+logoW > b.left && fy < b.bottom && fy+logoH > b.top)) {
-                        placeLogo(container, tag.imageAddress, fx, fy, logoW, logoH)
+                        placeLogo(container, tag.imageAddress, fx, fy, logoW, logoH, tag.name)
                         placedLogos.push({ left: fx, top: fy, right: fx+logoW, bottom: fy+logoH })
                         console.warn(`[Logo] ABOVE FALLBACK ${tag.name} at y:${Math.round(fy)}`)
                         break
@@ -872,37 +894,136 @@ function createHouseLogos(container) {
         })
     })
 }
+
+function getTreeScale(container) {
+    let match = (container.treeDiv.style.transform || '').match(/scale\(([^)]+)\)/)
+    return match ? parseFloat(match[1]) : 1
+}
+
 // Updated placeLogo — uses explicit width+height on div so collision rect matches display
-function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
+function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight, tagName) {
     if (!container || !container.treeDiv) return
     let logoDiv = document.createElement('div')
     logoDiv.classList.add('logo')
-    logoDiv.style.position    = 'absolute'
-    logoDiv.style.left        = `${xPos}px`
-    logoDiv.style.top         = `${yPos}px`
-    logoDiv.style.width       = `${logoWidth}px`
-    logoDiv.style.height      = `${logoHeight}px`
-    logoDiv.style.zIndex = '-1'
-    logoDiv.style.pointerEvents = 'none'
+    logoDiv.style.position   = 'absolute'
+    logoDiv.style.left       = `${xPos}px`
+    logoDiv.style.top        = `${yPos}px`
+    logoDiv.style.width      = `${logoWidth}px`
+    logoDiv.style.height     = `${logoHeight}px`
+    logoDiv.style.zIndex     = '1'
+    logoDiv.style.cursor     = 'grab'
+    logoDiv.style.opacity    = '1'
+    logoDiv.style.transition = 'opacity 0.15s'
+
+    let tooltip = document.createElement('div')
+    tooltip.textContent = 'Drag to move • Shift+drag to resize'
+    tooltip.style.cssText = `
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        transform-origin: bottom center;
+        background: rgba(0,0,0,0.75);
+        color: white;
+        font-size: 11px;
+        font-family: Arial, sans-serif;
+        padding: 4px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+        pointer-events: none;
+        display: none;
+        z-index: 1000;
+    `
+    logoDiv.appendChild(tooltip)
+
+    logoDiv.addEventListener('mouseenter', () => {
+        if (!logoDiv._dragging) {
+            logoDiv.style.opacity = '0.7'
+            let scale = getTreeScale(container)
+            tooltip.style.transform = `translateX(-50%) scale(${1 / scale})`
+            tooltip.style.display = 'block'
+        }
+    })
+    logoDiv.addEventListener('mouseleave', () => {
+        if (!logoDiv._dragging) {
+            logoDiv.style.opacity = '1'
+            tooltip.style.display = 'none'
+        }
+    })
+
+    logoDiv.addEventListener('mousedown', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        tooltip.style.display = 'none'
+
+        let startX   = e.clientX
+        let startY   = e.clientY
+        let origLeft = parseInt(logoDiv.style.left)
+        let origTop  = parseInt(logoDiv.style.top)
+        let origW    = parseInt(logoDiv.style.width)
+        let origH    = parseInt(logoDiv.style.height)
+        let isResize = e.shiftKey
+        let didDrag  = false
+
+        logoDiv._dragging = true
+        logoDiv.style.cursor  = isResize ? 'nwse-resize' : 'grabbing'
+        logoDiv.style.opacity = '1'
+        logoDiv.style.zIndex  = '999'
+
+        const onMouseMove = (e) => {
+            let dx = e.clientX - startX
+            let dy = e.clientY - startY
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag = true
+
+            if (isResize) {
+                let scale = 1 + dx / 200
+                let newW = Math.max(40, Math.round(origW * scale))
+                let newH = Math.max(30, Math.round(origH * scale))
+                logoDiv.style.width  = newW + 'px'
+                logoDiv.style.height = newH + 'px'
+                logoDiv.style.left   = (origLeft - (newW - origW) / 2) + 'px'
+                logoDiv.style.top    = (origTop  - (newH - origH) / 2) + 'px'
+            } else {
+                logoDiv.style.left = (origLeft + dx) + 'px'
+                logoDiv.style.top  = (origTop  + dy) + 'px'
+            }
+        }
+
+        const onMouseUp = (e) => {
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', onMouseUp)
+
+            logoDiv._dragging = false
+            logoDiv.style.cursor = 'grab'
+            logoDiv.style.zIndex = '1'
+
+            if (!didDrag) {
+                let tag = getTag(tagName)
+                if (tag) showTab(tagToTab(tag))
+            }
+        }
+
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
+    })
+
     let img = document.createElement('img')
-    img.src            = logoSrc
-    img.style.width    = '100%'
-    img.style.height   = '100%'
-    img.style.objectFit = 'contain'
+    img.src              = logoSrc
+    img.style.width      = '100%'
+    img.style.height     = '100%'
+    img.style.objectFit  = 'contain'
+    img.style.pointerEvents = 'none'
     logoDiv.appendChild(img)
     container.treeDiv.appendChild(logoDiv)
 }
 
 function createHouseBackground(container) {
-    // Find all houses in this container that have logos
     let taggedHouses = container.houses
         .map(h => getTag(h))
         .filter(t => t && t.imageAddress)
 
-    // Skip the main combined tree (many houses with logos)
     if (taggedHouses.length > 5) return
 
-    // Pick the house with the most non-stub members
     let primaryTag = taggedHouses.sort((a, b) => {
         let aC = container.siblings.filter(s => s.house === a.name && !s.tags.includes('stub')).length
         let bC = container.siblings.filter(s => s.house === b.name && !s.tags.includes('stub')).length
@@ -913,6 +1034,7 @@ function createHouseBackground(container) {
 
     let tabDiv = container.structure['tabs']
     tabDiv.style.position = 'relative'
+    tabDiv.style.overflow = 'hidden'
 
     let bg = document.createElement('img')
     bg.src = primaryTag.imageAddress
@@ -920,15 +1042,14 @@ function createHouseBackground(container) {
     bg.style.top           = '50%'
     bg.style.left          = '50%'
     bg.style.transform     = 'translate(-50%, -50%)'
-    bg.style.width         = '80%'
-    bg.style.opacity       = '0.05'
+    bg.style.width         = 'min(75vh, 75vw)'
+    bg.style.opacity       = '0.08'
     bg.style.pointerEvents = 'none'
     bg.style.zIndex        = '0'
     bg.style.objectFit     = 'contain'
 
     tabDiv.insertBefore(bg, tabDiv.firstChild)
 }
-
 // // Function to place a logo at a specific position in the tree
 // function placeLogo(container, logoSrc, xPos, yPos, logoWidth, logoHeight) {
 

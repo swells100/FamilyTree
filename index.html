@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fiji TreeG</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <link rel="stylesheet" href="stylesheet.css">
     <link rel="stylesheet" href="jquery-ui.css">
 
@@ -52,6 +53,9 @@
                     </label>
                     <input type="text" id="searchInput" name="searchInput" placeholder="Search by name..."></input>
                 </div>
+                <div id="treeTitle" style="font-family: 'Cinzel', serif; font-size: 30px; font-weight: 700; margin: 0 12px; white-space: nowrap; user-select: none; color: #000000; -webkit-text-stroke: 0.5px #FFD700;">
+                    ΓΚ FIJI Family Tree
+                </div>
             </div>
 
             <!-- The tabs with the tree in it, autofilled by script -->
@@ -72,28 +76,91 @@
         <div id="rightColContainer" v-if="getDisplayTab() != 'mainMenu'" class="col right">
             <!-- Buttons -->
             <div class="tabNavButtonContainer barTop" v-if="getDisplayTab() != 'tree'">
-                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable">🠔</button>
-                <button v-if="canGoForward()" onclick="goForward()" class="tabNavButton clickable">🠖</button>
-                <button onclick="exitTab()" class="tabNavButton right clickable">×</button>
+                <button :style="{ opacity: canGoBackward() ? 1 : 0 }" onclick="goBack()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#9664;</button>
+                <button :style="{ opacity: canGoForward() ? 1 : 0 }" onclick="goForward()" class="tabNavButton clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#9654;</button>
+                <button onclick="exitTab()" class="tabNavButton right clickable" style="font-size: 24px; line-height: 1; font-family: Arial, sans-serif; color: #333;">&#10005;</button>
+            </div>
+            <!-- Settings tab -->
+            <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'" style="padding: 12px;">
+                <h1>Tree Legend</h1>
+            
+                <h2>Houses</h2>
+                <div v-for="tag in getSettings().tagData.filter(t => t.type && t.type.includes('HOUSE'))" 
+                     :key="tag.name"
+                     style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;"
+                     @click="displayTagInfo(tag.name)">
+                    <img v-if="tag.imageAddress" 
+                         :src="tag.imageAddress.startsWith('http') ? tag.imageAddress : 'https://drive.google.com/thumbnail?id=' + tag.imageAddress"
+                         style="width: 40px; height: 40px; object-fit: contain;">
+                    <div v-else style="width: 40px; height: 40px; border-radius: 4px;"
+                         :style="{ backgroundColor: tag.borderColor || '#ccc' }"></div>
+                    <div>
+                        <strong>{{ tag.name }}</strong>
+                        <div style="font-size: 0.85em; color: #555;">{{ tag.description }}</div>
+                    </div>
+                </div>
+            
+                <h2>Tags</h2>
+                <div v-for="tag in getSettings().tagData.filter(t => t.type && t.type.includes('SYMBOL') && !t.type.includes('HOUSE'))"
+                     :key="tag.name"
+                     style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;"
+                     @click="displayTagInfo(tag.name)">
+                    <img v-if="tag.imageAddress"
+                         :src="tag.imageAddress.startsWith('http') ? tag.imageAddress : 'https://drive.google.com/thumbnail?id=' + tag.imageAddress"
+                         style="width: 32px; height: 32px; object-fit: contain;">
+                    <div v-else style="width: 32px; height: 32px;"></div>
+                    <div>
+                        <strong>{{ tag.name }}</strong>
+                        <div style="font-size: 0.85em; color: #555;">{{ tag.description }}</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Settings tab -->
-            <div id="infoTab" class="secondaryTab" v-if="getDisplayTab() == 'info'">
-                <h1>This is the family tree for the Gamma Kappa chapter of Phi Gamma Delta. </h1>
-            </div>
-
-            <!-- Settings tab -->
-            <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'">
+            <div id="settingsTab" class="secondaryTab" v-if="getDisplayTab() == 'settings'" style="padding: 12px;">
                 <h1>Settings</h1>
-                <label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" v-model="showHouseLogos" @change="toggleHouseLogos">
                     Show house logos
                 </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="showTagSymbols" @change="toggleTagSymbols">
+                    Show tag symbols
+                </label>
+                <h3 style="margin: 8px 0 4px;">Print Settings</h3>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="printWithLegend">
+                    Print with legend
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" v-model="printWithBackground">
+                    Print with background (subtrees only)
+                </label>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                    <span style="white-space: nowrap;">Print Margin: {{ formatMargin() }}&quot;</span>
+                    <input type="range" min="0" max="2" step="0.125" v-model.number="printMargin" style="flex: 1;">
+                </div>
+                <div v-if="printWithLegend" style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                    <h3 style="margin: 8px 0 4px;">Legend Settings</h3>
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        Legend Size: {{ legendWidth }}px
+                        <input type="range" min="100" max="400" step="10" v-model.number="legendWidth" style="flex: 1;">
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <button @click="legendSide = 'left'"  :style="{ fontWeight: legendSide == 'left'  ? 'bold' : 'normal', background: legendSide == 'left'  ? '#ddd' : '' }" style="flex: 1; padding: 4px; cursor: pointer;">Left</button>
+                        <button @click="legendSide = 'right'" :style="{ fontWeight: legendSide == 'right' ? 'bold' : 'normal', background: legendSide == 'right' ? '#ddd' : '' }" style="flex: 1; padding: 4px; cursor: pointer;">Right</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Settings tab -->
             <div id="suggestionsTab" class="secondaryTab" v-if="getDisplayTab() == 'suggestions'">
-                <h1>This is where the suggestions are!</h1>
+                <h1>Suggestions</h1>
+                <p>Have a correction or suggestion? Submit it below and it'll go straight to the sheet.</p>
+                <textarea id="suggestionText" style="width: 90%; height: 120px; margin: 8px 0; padding: 8px; font-size: 14px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;" placeholder="Enter your suggestion here..."></textarea>
+                <br>
+                <button id="suggestionSubmit" onclick="submitSuggestion()" style="padding: 8px 20px; font-size: 14px; cursor: pointer;">Submit</button>
+                <p id="suggestionStatus" style="color: green; display: none;">Submitted!</p>
             </div>
 
             <!-- Tab that opens when you click a name. -->

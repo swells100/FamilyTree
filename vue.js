@@ -6,7 +6,13 @@ function loadVue() {
             tabPosition: 0,
             split: null,
             settings: null,
-            showHouseLogos: true
+            showHouseLogos: true,
+            showTagSymbols: true,
+            printWithLegend: true,
+            legendWidth: 220,
+            legendSide: 'left',
+            printMargin: 0.5,
+            printWithBackground: true
         },
         methods: {
             getDisplayTab: function() {
@@ -19,7 +25,7 @@ function loadVue() {
                 return this.settings
             },
             canGoBackward: function() {
-                return this.tabPosition > 1
+                return this.tabPosition >= 1
             },
             canGoForward: function() {
                 return this.tabPosition < this.tabHistory.length - 1
@@ -79,11 +85,21 @@ function loadVue() {
                 }
                 return null
             },
+            
             toggleHouseLogos: function() {
                 let logos = document.querySelectorAll('.logo')
                 logos.forEach(logo => {
                     logo.style.display = this.showHouseLogos ? 'block' : 'none'
                 })
+            },
+            toggleTagSymbols: function() {
+                let symbols = document.querySelectorAll('.tagSymbol')
+                symbols.forEach(s => {
+                    s.style.display = this.showTagSymbols ? 'inline' : 'none'
+                })
+            },
+            formatMargin: function() {
+                return parseFloat(this.printMargin || 0).toFixed(2)
             }
         }
         
